@@ -1,0 +1,60 @@
+@startuml
+title "Obtener resumen de salarios"
+
+control "generateData.controller.js" as C
+boundary "getDepreciation.usecase.js" as UC
+boundary "productionLineTemplate.repository.js" as R
+boundary "getSalarySummary.service.js" as SGD
+entity "productionLineTemplate.model.js" as M
+database "DB" as DB
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC -> UC: const productionLineIdTemplate = \n roblox.\nprocessesInProductionLine.productionLineId
+
+UC ->> R: const productionLineTemplate = \n productionLine.\ngetProductionLineTemplateById(productionLineIdTemplate)
+activate R
+
+R -> M: findByIdProductionLineTemplate\n(productionLineIdTemplate)
+activate M
+
+M -> DB: productionLineTemplate.\nfindById(productionLineIdTemplate)
+activate DB
+
+DB -->> M: productionLineTemplate
+deactivate DB
+
+M -->> R: productionLineTemplate
+deactivate M
+
+R -->> UC: productionLineTemplate
+deactivate R
+
+UC -> UC: const workersProductionLine =\n productionLineTemplate\n.workers
+
+UC ->> SGD: getSalarySummary(workerProductionLine)
+activate SGD
+
+SGD ->> SGD: let summarySalary = {}
+SGD ->> SGD: let summarySalaryGlobal = {directHand : 0.0, \n indirectHand: 0.0 \n, engineerSalary:0.0, \n managementSalary: 0.0}
+loop <font color=red>for worker in workersProductionLine
+    alt <font color=#1E8449>if (summarySalary[worker.role] exists)
+        SGD -> SGD: summarySalary[worker.role].quantity += worker.quantity\n<b>summarySalary[worker.role].subtotal += (worker.salary * worker.quantity)</b>
+    else <font color=#E67E22>else (create new role)
+        SGD -> SGD: summarySalary[worker.role] = {quantity: worker.quantity, <b>subtotal: (worker.salary * worker.quantity)</b>}
+    end
+     SGD -> SGD: summarySalaryGlobal[worker.roleArea] += (worker.salary * worker.quantity)
+    
+end
+
+SGD -> SGD: finalSummary = { byRole: summarySalary, byCategory: summarySalaryGlobal }
+
+SGD -->> UC: finalSummary
+deactivate SGD
+
+
+
+
+deactivate UC
+@enduml

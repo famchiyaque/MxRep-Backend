@@ -1,0 +1,131 @@
+// import express and other necessary libraries
+
+// create global routes
+
+// /dashborad/
+// /roblox/*
+// /auth/*
+
+
+// Every route will follow the same flow through the backend to return needed information:
+// Route -> SubRoute -> Controller -> UseCase -> Service -> Repository
+// 1. First part of route path (this file)
+// ex- router.get("/dashboard/*", dashboardController.exampleRoute(userId, startDate, endDate))
+// 2. Second Part of route path (/routes/dashboard.routes.js)
+// ex- ("/dashboard/financial-health", { return dashboardController.getFinancialHealth(userId, startDate, endDate) })
+// 3. Controller, simply calls the correct use cases (/controllers/dashboard.controllers.js)
+// ex- router.get("/finance-analysis", return dashboardUseCase.getFinancialHealth(userId, startDate, endDate))
+// 4. Use Cases- calls correct services, and formats for return (/dashboard.use-cases.js)
+// ex- const debtRatio = await dashboardService.getDebtRatio(user, startDate, endDate) 
+// 5. Service- business logic, calculations, calls data from repositories
+// ex - const assets = dashboardRepo.getAssets(user, )
+// 6. Repository
+
+/*
+===============================================================================
+MXREP BACKEND STRUCTURE GUIDE
+===============================================================================
+
+This backend is built with Express (a Node.js web framework). 
+Every request from the frontend will pass through the same flow before data 
+is returned to the user:
+
+   ROUTE -> SUBROUTE -> CONTROLLER -> USE CASE -> SERVICE -> REPOSITORY
+
+Think of this like layers in an onion. Each layer has a job:
+- Routes = entry points (what URL the frontend calls)
+- Controllers = traffic cops (decide which "use case" to run)
+- Use Cases = the brain (define what to do for this specific request)
+- Services = calculations and rules (business logic)
+- Repositories = the library (talk to the database)
+
+This structure makes the app easier to maintain, test, and expand.
+
+-------------------------------------------------------------------------------
+1. SETUP
+-------------------------------------------------------------------------------
+- First install express as a dependency:
+  > npm install express
+
+- The main file is server.js (this file). It creates the Express app, 
+  listens on a port, and connects the route files.
+
+-------------------------------------------------------------------------------
+2. ROUTES (server.js and /routes folder)
+-------------------------------------------------------------------------------
+- In server.js, we set up "father routes" that point to route files.
+  Example: app.use("/dashboard", require("./routes/dashboard.routes.js"))
+- Inside /routes/dashboard.routes.js, we define sub-routes like:
+  "/financial-analysis", "/sales-report", etc.
+- Routes NEVER contain business logic. They only pass the request along.
+
+Flow: Frontend calls GET /dashboard/financial-analysis → 
+       server.js forwards to dashboard.routes.js →
+       dashboard.routes.js forwards to the correct controller.
+
+-------------------------------------------------------------------------------
+3. CONTROLLERS (/controllers folder)
+-------------------------------------------------------------------------------
+- Controllers handle requests for one specific domain (dashboard, users, etc.).
+- They receive input (userId, dates, etc.) from the route.
+- Their only job: call the correct use case and return the response.
+
+Think of controllers as: "Okay, the user asked for financial health → 
+let’s run the financial health use case."
+
+-------------------------------------------------------------------------------
+4. USE CASES (/use-cases folder)
+-------------------------------------------------------------------------------
+- Use cases represent specific actions the app can do.
+  Example: getFinancialHealth, calculateDebtRatio, fetchUserProfile.
+- Each use case calls the right services and organizes the data into 
+  the final format to return.
+- Use cases = "high-level business logic".
+
+-------------------------------------------------------------------------------
+5. SERVICES (/services folder)
+-------------------------------------------------------------------------------
+- Services contain the actual business rules and calculations.
+- Example: A financial service that calculates ratios (debt ratio, 
+  liquidity ratio) given raw assets and liabilities.
+- Services call repositories to fetch data, then transform/process it.
+
+Think of services as: "We know the rules of finance, let’s calculate 
+numbers based on data we get from repositories."
+
+-------------------------------------------------------------------------------
+6. REPOSITORIES (/repositories folder)
+-------------------------------------------------------------------------------
+- Repositories are the only layer that talks to the database directly.
+- Example: getAssets(userId, dateRange), getLiabilities(userId, dateRange).
+- They never include business logic, only raw queries.
+- This makes it easy to swap out the database in the future without 
+touching services/use-cases.
+
+-------------------------------------------------------------------------------
+7. FLOW EXAMPLE
+-------------------------------------------------------------------------------
+Imagine the frontend opens the Financial KPIs tab:
+
+Step 1: Frontend calls → GET /dashboard/financial-analysis?userId=123&start=2025-01-01&end=2025-01-31  
+Step 2: server.js → forwards "/dashboard" requests to dashboard.routes.js  
+Step 3: dashboard.routes.js → matches "/financial-analysis" and calls dashboardController.getFinancialHealth  
+Step 4: dashboardController → calls dashboardUseCase.getFinancialHealth(userId, start, end)  
+Step 5: dashboardUseCase → calls dashboardService.getDebtRatio, getLiquidityRatio, etc.  
+Step 6: dashboardService → fetches assets/liabilities via dashboardRepository, performs calculations  
+Step 7: dashboardRepository → queries the DB and returns raw data  
+Step 8: Data flows back up the chain → formatted JSON is sent to frontend
+
+-------------------------------------------------------------------------------
+8. SUMMARY
+-------------------------------------------------------------------------------
+- Routes = entry points (URLs).
+- Controllers = choose the right use case.
+- Use Cases = orchestrate logic.
+- Services = apply rules and calculations.
+- Repositories = talk to the database.
+
+Following this layered structure keeps code clean, avoids "fat controllers", 
+and makes it easy to test each piece separately.
+===============================================================================
+*/

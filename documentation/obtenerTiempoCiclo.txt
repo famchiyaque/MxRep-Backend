@@ -1,0 +1,31 @@
+@startuml
+title "Obtener Tiempo Ciclo "
+
+control "generateData.controller.js" as C
+boundary "getCapacity.usecase.js" as UC
+boundary "getCycleTime.service.js" as SCT
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC -> UC: const processes = \n roblox.processesInProductionLine
+
+UC ->> SCT: const cycleTime = \n getCycleTime(processes)
+activate SCT
+
+SCT ->> SCT: let totalTime = 0
+SCT ->> SCT: let totalOperators = 0
+SCT ->> SCT: cycleTimeExplain {totalCycleTime: 0.0, \n totalOperators: 0}
+loop <font color=red>for process in processes
+    SCT -> SCT: totalTime += process.totalTime/process.numberOperators
+    SCT -> SCT: totalOperators += process.numberOperators
+end
+SCT -->> SCT: cycleTimeExplain.totalCycleTime = totalTime \n cycleTimeExplain.totalOperators = totalOperators
+
+SCT -->> UC: cycleTimeExplain
+deactivate SCT
+
+
+deactivate UC
+
+@enduml

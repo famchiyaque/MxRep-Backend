@@ -1,0 +1,67 @@
+@startuml
+title "Obtener depreciación"
+
+control "generateData.controller.js" as C
+boundary "getDepreciation.usecase.js" as UC
+boundary "productionLineTemplate.repository.js" as R
+boundary "getDeprecation.service.js" as SGD
+entity "productionLineTemplate.model.js" as M
+database "DB" as DB
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC -> UC: const productionLineIdTemplate = \n roblox.\nprocessesInProductionLine.productionLineId
+
+UC ->> R: const productionLineTemplate = \n productionLine.\ngetProductionLineTemplateById(productionLineIdTemplate)
+activate R
+
+R -> M: findByIdProductionLineTemplate\n(productionLineIdTemplate)
+activate M
+
+M -> DB: productionLineTemplate.\nfindById(productionLineIdTemplate)
+activate DB
+
+DB -->> M: productionLineTemplate
+deactivate DB
+
+M -->> R: productionLineTemplate
+deactivate M
+
+R -->> UC: productionLineTemplate
+deactivate R
+
+UC -> UC: const componentsProductionLine =\n productionLineTemplate\n.components
+
+UC ->> SGD: getDeprecation(componentsProductionLine)
+activate SGD
+
+SGD ->> SGD: let totalDepreciation = 0
+SGD ->> SGD: let machinaryDepreciation = 0
+SGD ->> SGD: let buildingDepreciation = 0
+SGD ->> SGD: let transportDepreciation = 0
+SGD ->> SGD: let computerDepreciation = 0
+
+loop <font color=red>for component in componentsProductionLine
+    SGD -> SGD: totalDepreciation += component.value
+    alt if(component.type == "machinary")
+        SGD ->> SGD: machinaryDepreciation += component.value
+    end
+    alt if(component.type == "building")
+        SGD ->> SGD: buildingDepreciation += component.value
+    end
+    alt if(component.type == "transport")
+        SGD ->> SGD: transportDepreciation += component.value
+    end
+    alt if(component.type == "computer")
+        SGD ->> SGD: computerDepreciation += component.value
+    end
+end
+
+SGD -> SGD: depreciationData = {totalDepreciation, machinaryDepreciation,\n buildingDepreciation,\ntransportDepreciation,\n computerDepreciation}
+
+SGD -->> UC: depreciationData
+deactivate SGD
+
+deactivate UC
+@enduml

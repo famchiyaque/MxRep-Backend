@@ -1,0 +1,37 @@
+@startuml
+title "Obtener BOM"
+
+control "generateData.controller.js" as C
+boundary "getBom.usecase.js" as UC
+boundary "bom.repository.js" as R
+entity "bom.model.js" as M
+database "DB" as DB
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC -> UC: const bomId = \n roblox.processesInProductionLine.bom.bomId
+
+UC ->> R: const bom = \n bomRepository.getBom(bomId)
+activate R
+
+R -> M: getBom(bomId)
+activate M
+
+M -> DB: Bom.findById(bomId)
+activate DB
+
+DB -->> M: bom
+deactivate DB
+
+M -->> R: bom
+deactivate M
+
+R -->>UC: bom
+
+UC -> UC: const subTotalBom = bom.subtotal
+deactivate R
+
+
+deactivate UC
+@enduml

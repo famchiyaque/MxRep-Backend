@@ -1,0 +1,30 @@
+@startuml
+title "Obtener Capacidad Ocupada"
+
+control "generateData.controller.js" as C
+boundary "getCapacity.usecase.js" as UC
+boundary "wareHouseOrder.service.js" as SWHO
+boundary "capacityOcupated.service.js" as COS
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC -> UC: const customerOrder = \nrobloxData.customerOrder
+UC -> UC: const quality =\n robloxData.productionLine.quality
+UC -> UC: const anualCapacity =\n robloxData.annualCapacity
+
+UC ->> SWHO: const wareHouseOrder = getWareHouseOrder(customerOrder, quality)
+activate SWHO
+SWHO ->> SWHO: customerOrder / quality
+SWHO -->> UC: wareHouseOrder
+deactivate SWHO
+
+UC ->> COS: const capacityOcupateds = \n capacityOcupated(WO, annualCapacity)
+activate COS
+COS ->> COS: WO / annualCapacity
+COS -->> UC: capacityOcupated
+deactivate COS
+
+deactivate UC
+
+@enduml
