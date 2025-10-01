@@ -4,7 +4,7 @@ Designed to store data from our Roblox production line simulator and serve our f
 application, this node + express + postrgres backend is the official backend of the
 R&EIT department's MxRep project.
 
-### Architecture Design
+### Technologies
 
 It's made to be simple but powerful, hosting an array of endpoints both for receiving POST requests
 from our Roblox simulator game, and offering GET requests for our education finance app to turn the 
@@ -14,5 +14,11 @@ That's why Node + Express was chosen.
 
 As for our database, we went with robust Postgres for organized sql and to manage our delicately
 related 15+ tables.
+
+### Project Architecture
+
+This project uses the hexagonal software architecture, separating different layers of concerns through
+routes, controllers, use cases, services, and repositories. This provides organization and clear, single-
+purpose code.
 
 ### TBD...
