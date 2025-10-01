@@ -1,0 +1,7 @@
+# EXCLUDED FILES/FOLDERS FROM REMOTE REPO
+# Here you indicate which files and folders you don't want to upload to GitHub
+
+# For example the node_modules dir, which will host like a million public libraries
+# are simply unecessary to upload
+
+# ESPECIALLY the .env file (holds all private keys for access to database) 
