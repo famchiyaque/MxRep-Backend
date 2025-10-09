@@ -1,4 +1,4 @@
 
-exports.capacityOcupated = async (wareHouseOrder, annualCapacity) => {
-    return wareHouseOrder / annualCapacity
+exports.getCapacityOcupated = async (wareHouseOrder, annualCapacity) => {
+    return wareHouseOrder / annualCapacity * 100
 }

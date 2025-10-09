@@ -1,4 +1,4 @@
 
-exports.wareHouseOrder = async (customerOrder, quality) => {
+exports.getWareHouseOrder = async (customerOrder, quality) => {
     return customerOrder / quality
 }

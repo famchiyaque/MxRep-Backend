@@ -2,11 +2,15 @@ const getWareHouseOrderService = require ("../services/wareHouseOrder.service")
 const capacityOcupatedsService = require ("../services/capacityOcupated.service")
 
 exports.getCapacity = async (robloxData) => {
-    const customOrder = robloxData.customOrder
-    const quality = robloxData.productionLine.quality
+    const customerOrder = robloxData.customerOrder
+    const quality = robloxData.quality
     const anualCapacity = robloxData.anualCapacity
-    const wareHouseOrder = getWareHouseOrderService.getWareHouseOrder(customOrder, quality)
-    const capacityOcupateds = capacityOcupatedsService.capacityOcupateds(wareHouseOrder, anualCapacity)
-    console.log(wareHouseOrder)
-    console.log(capacityOcupateds)
+
+    const wareHouseOrder = await getWareHouseOrderService.getWareHouseOrder(customerOrder, quality)
+    const capacityOcupateds = await capacityOcupatedsService.getCapacityOcupated(wareHouseOrder, anualCapacity)
+    console.log('customerOrder: ',robloxData.customerOrder)
+    console.log('quality: ',robloxData.quality)
+    console.log('anualCapacity: ',robloxData.anualCapacity)
+    console.log('wareHouseOrder: ',wareHouseOrder)
+    console.log('capacityOcupateds: %',capacityOcupateds)
 }
