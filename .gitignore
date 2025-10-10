@@ -5,3 +5,5 @@
 # are simply unecessary to upload
 
 # ESPECIALLY the .env file (holds all private keys for access to database) 
+node_modules/
+.env
