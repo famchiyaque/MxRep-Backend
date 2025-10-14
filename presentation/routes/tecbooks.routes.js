@@ -1,0 +1,61 @@
+// ----------UNIVERSAL ROUTES-----------
+// /auth/me
+// /auth/find-user GET[receive email, check users first, then requests]
+// /auth/login GET[receive email and pass, check against db, create jwt with name, roles, admin_level, expiry]
+// /auth/logout // not sure we need this one, session exists on frontend
+// /auth/forgot-password (rate-limiter) POST[receive email, send email with link to reset form and jwt in token]
+// /auth/verify-token (verify-token) GET[simply passes through middleware and/or controller func to return status of jwt]
+
+// ----------STUDENT ROUTES-------------
+
+// Student registration flow: request, validate email, register
+// /register/student/request (rate-limiter) 
+// /register/student/finalize
+
+// /student-panel/get-games (cookie/jwt)
+// /student-panel/get-teams (cookie/jwt)
+// /student-panel/get-runs (cookie/jwt)
+// /student-panel/join-game (cookie/jwt)
+// /student-panel/send-invite (rate-limiter)
+
+// /dashboard/overiew (cookie/jwt)
+// /dashboard/production (cookie/jwt)
+// /dashboard/financial-statements (cookie/jwt)
+// /dashboard/financial-health (cookie/jwt)
+// /dashboard/forecasts (cookie/jwt)
+// /dashboard/project-evaluation (cookie/jwt)
+
+// ----------PROFESSOR ROUTES------------
+
+// /register/professor/request          // [rate-limit] - submit application to institution
+// /register/professor/remind           // [rate-limit] - resend reminder to admin
+// /register/professor/registry-invite  // [rate-limit] - join via admin-sent email w/ jwt
+
+// /professor-panel/get-games           // [jwt, role=professor|admin]
+// /professor-panel/create-game         // [jwt, role=professor|admin]
+// /professor-panel/create-team         // [jwt, role=professor]
+// /professor-panel/get-configurations  // [jwt]
+// /professor-panel/get-premises        // [jwt]
+// /professor-panel/save-game-draft     // [jwt]
+// /professor-panel/get-students        // [jwt]
+// /professor-panel/end-game            // [jwt]
+// /professor-panel/create-game-code    // [jwt]
+// /professor-panel/send-mass-invite    // [jwt]
+
+
+// ---------- INSTITUTION REGISTRATION ----------
+// /register/institution/request         // [rate-limit] - create pending institution request POST[create request w/ name, location, slug, domain, and send email to super]
+// /register/institution/finalize        // [creates institution + admin user] POST[fill in passwd, ask if admin/teacher, is first admin user]
+
+// ---------- ADMIN PANEL ----------
+// /admin-panel/get-professors           // [jwt, role=admin|super-admin] GET
+// /admin-panel/change-professor-status  // [jwt, role=admin|super-admin] POST[change admin_level of professor user from none to institution]
+// /admin-panel/approve-professor        // [jwt, role=admin|super-admin] POST[change status of request to approved, change profesor status to ]
+// /admin-panel/decline-professor        // [jwt, role=admin|super-admin] POST[change status of request to declined]
+// /admin-panel/send-invite-email        // [jwt, role=admin|super-admin] POST[Prof all info except name/pass, send email with jwt]
+
+// ---------- SUPER ADMIN ----------
+// /super-admin/get-institutions         // [jwt, role=super-admin]
+// /super-admin/approve-institution      // [jwt, role=super-admin]
+// /super-admin/decline-institution      // [jwt, role=super-admin]
+// /super-admin/create-invite-link       // [jwt, role=super-admin] // not sure about this one
