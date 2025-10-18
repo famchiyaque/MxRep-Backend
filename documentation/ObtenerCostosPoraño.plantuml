@@ -21,7 +21,7 @@ loop <font color=red>while currentYear < currentYear + 5
     note right: Ya no voy a poner estas\n variables pero se obtuvieorn\n anteriormente al sacar los egresos \n sobre el resumen de los salarios de forma anual
     UC ->> SCP: const finalExpenses = getFinalExpensesService.\ngetFinalExpenses\n(summarySalary, totalIncomes * 0.05)
     activate SCP
-    SCP ->> UC: return  Object.values(valuesObject).reduce((sum, value) => sum + value, fixedValue);
+    SCP ->> UC: return  Object.values(valuesObject).reduce((sum, value) => sum + value, totalIncomes);
     deactivate SCP
     UC -> UC: summaryYearly.push(finalExpenses)
     end

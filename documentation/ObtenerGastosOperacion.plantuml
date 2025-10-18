@@ -1,0 +1,20 @@
+@startuml ObtenerGastos de Operacion.plantuml
+title "Obtener GAstos de operacion"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getOperationExpenses.service.js" as SME
+
+activate UC
+
+UC ->> UC: const  managementExpenses = managementSalary + 5316000
+UC ->> SME: const  OperationExpenses =getOperationExpensesService.\ngetOperationExpenses\n(depreciationData, managementExpenses) 
+activate SME
+SME -->> UC: return Object.values(depreciationData).reduce((sum, value) => sum + value, managementExpenses);
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml
