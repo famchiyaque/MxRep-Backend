@@ -1,0 +1,18 @@
+@startuml Obtener la cantidad de equilibrio.plantuml
+title "Obtener Obtener la cantidad de equilibrio"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getBalanceQuantity.service.js" as SME
+boundary "getFinalExpenses.service.js" as SCP
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+    UC ->> SME: const balanceQuantity = getBalanceQuantityService.getBalanceQuantity({\n fixedCostsAnnual, productPrice, variablesAnnualExpenses, })
+    activate SME
+    SME -->> UC: return  fixedCostsAnnual / (productPrice - variablesAnnualExpenses);
+    deactivate SME
+deactivate UC
+
+
+@enduml
