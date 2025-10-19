@@ -1,0 +1,42 @@
+@startuml ObtenerTIR
+title Cálculo de la Tasa Interna de Retorno (TIR) en JavaScript
+
+actor Usuario
+participant "Función calculateIRR(cashflows, guess)" as IRR
+participant "Bucle for (iteraciones)" as Loop
+participant "Cálculo NPV y Derivada" as Calc
+participant "Ajuste de tasa (Newton-Raphson)" as Newton
+
+
+Usuario -> IRR: Llama calculateIRR(cashflows, guess = 0.1)
+note right: si \nle pregunte a chat gpt como\n obtener el TIR porque es una\n formula de excel la cual pide los \nflujos de efectivo por cada año\n quien haga este acerquese con Rommel\n
+activate IRR
+IRR -> IRR: Definir maxIterations = 1000
+IRR -> IRR: Definir precision = 1e-7
+IRR -> IRR: Definir rate = guess (0.1)
+
+loop Hasta 1000 iteraciones
+  IRR -> Loop: for (let i = 0; i < maxIterations; i++)
+
+  Loop -> Calc: Inicializa npv = 0 y derivative = 0
+
+  loop Para cada flujo de caja
+    Calc -> Calc: npv += CF_t / (1 + rate)^t
+    Calc -> Calc: derivative -= t * CF_t / (1 + rate)^(t + 1)
+  end
+
+  Calc -> Newton: Calcula newRate = rate - npv / derivative
+
+  alt |rate - newRate| < precision
+    Newton -> IRR: Retorna rate (convergió)
+    deactivate Loop
+    break
+  else
+    Newton -> Loop: rate = newRate (siguiente iteración)
+  end
+end
+
+IRR -> Usuario: Si no converge → Error("No convergence")
+deactivate IRR
+
+@enduml
