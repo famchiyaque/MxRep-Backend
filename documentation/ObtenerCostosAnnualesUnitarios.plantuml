@@ -1,0 +1,19 @@
+@startuml ObtenerCostosAnualesUnitarios.plantuml
+title "Obtener Total de costos anuales variables unitarios"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getVariablesUnitExpenses.service.js" as SME
+boundary "getFinalExpenses.service.js" as SCP
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+note right: el bomSubtotal es el subtotal de\n materiales de la lista de materiales,\n directLabor es la mano de obra directa\ny wareHouseOrder es el costo de orden de almacén \n. SOn los primeros valores que se obtienen en el backend.
+    UC ->> SME: const variablesAnnualExpenses = getVariablesUnitExpensesService.getVariablesUnitExpenses({\n bomSubtotal, directLabor/wareHouseOrder, })
+    activate SME
+    SME -->> UC: return  Object.values(variableUnitCost).reduce((suma, value) => suma + value, 0);
+    deactivate SME
+deactivate UC
+
+
+@enduml
