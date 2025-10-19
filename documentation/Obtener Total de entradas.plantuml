@@ -1,0 +1,23 @@
+@startuml Obtener Entradas.plantuml
+title "Obtener Todas las Entradas"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getTotalIncomes.service.js" as SME
+
+activate UC
+
+
+
+UC ->> SME: const  totalIncomes =getTotalIncomesService.\ngetTotalIncomes\n({amount, brutalUtility}) 
+note right: el amount\n recuerda que es el \nprimer valor de investment o \nla variable amount que se usa para\n pagar empezar a pagar el credito
+
+activate SME
+SME -->> UC: return Object.values(incomes).reduce((suma, value) => suma + value, 0);
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml
