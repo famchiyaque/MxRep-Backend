@@ -9,7 +9,7 @@
 // ----------STUDENT ROUTES-------------
 
 // Student registration flow: request, validate email, register
-// /register/student/request (rate-limiter) 
+// /register/student/request (rate-limiter)
 // /register/student/finalize
 
 // /student-panel/get-games (cookie/jwt)
@@ -41,7 +41,6 @@
 // /professor-panel/end-game            // [jwt]
 // /professor-panel/create-game-code    // [jwt]
 // /professor-panel/send-mass-invite    // [jwt]
-
 
 // ---------- INSTITUTION REGISTRATION ----------
 // /register/institution/request         // [rate-limit] - create pending institution request POST[create request w/ name, location, slug, domain, and send email to super]
