@@ -1,5 +1,6 @@
 const getCapacityUseCase = require("../use-cases/getCapacity.usecase")
 const getCycleTime = require('../services/getCycleTime.service')
+const getBomUseCase = require('../use-cases/getBom.usecase.js');
 
 exports.generateData = async (request, response) => {
     const robloxData = {
@@ -87,9 +88,27 @@ exports.generateData = async (request, response) => {
             totalTime: 120,
             numberOperators: 3
         }
-    ]
+    ],
+    roblox: {
+          processesInProductionLine: {
+            bom: {
+              bomId: "BOM001"
+            }
+          }
+        }
     };
 
     await getCapacityUseCase.getCapacity(robloxData)
+
+
+
+    try {
+        const bomCompleto = await getBomUseCase.getBom(robloxData);
+        console.log("✅ ¡BOM encontrado...!");
+
+    } catch (error) {
+        console.error("❌ Controller: Ha ocurrido un error en el proceso.", error);
+    }
+
     response.json({ success: true, data: robloxData })
 }
