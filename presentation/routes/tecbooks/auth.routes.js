@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const authController = require("../../controllers/tecbooks/auth.controller.js");
 
 router.post("/register/student/request", (req, res) => {
   // 1. no middleware for this route
@@ -19,6 +20,8 @@ router.post("/register/student/finalize", (req, res) => {
   // 2. verify token again
   // 3. create user in the db
 });
+
+router.post("/auth/login", authController.loginController);
 
 router.get("/auth/me", (req, res) => {
   // 1. parse jwt from cookies

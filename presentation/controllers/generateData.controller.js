@@ -2,6 +2,7 @@ const getCapacityUseCase = require("../../domain/use-cases/getCapacity.usecase.j
 const getCycleTime = require("../../domain/services/getCycleTime.service.js");
 const generateExpensesUseCase = require("../../domain/use-cases/generateExpenses.usecase.js");
 const getBomUseCase = require("../../domain/use-cases/getBom.usecase.js");
+const  getDepreciationUseCase  = require("../../domain/use-cases/getDepreciation.usecase.js");
 
 exports.generateData = async (request, response) => {
   const robloxData = {
@@ -102,5 +103,6 @@ exports.generateData = async (request, response) => {
   await getCapacityUseCase.getCapacity(robloxData);
   await generateExpensesUseCase.generateExpenses(robloxData);
   await getBomUseCase.getBom(robloxData);
+  // await getDepreciationUseCase.getDepreciation(robloxData);
   response.json({ success: true, data: robloxData });
 };
