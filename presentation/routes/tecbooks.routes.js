@@ -1,3 +1,13 @@
+const authRoutes = require("./tecbooks/auth.routes");
+const professorsRoutes = require("./tecbooks/professors.routes");
+
+const router = require("express").Router();
+
+router.use("/mxrep/auth", authRoutes);
+router.use("/mxrep/professors", professorsRoutes);
+
+module.exports = router;
+
 // ----------UNIVERSAL ROUTES-----------
 // /auth/me
 // /auth/find-user GET[receive email, check users first, then requests]
