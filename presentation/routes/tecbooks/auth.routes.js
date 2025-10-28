@@ -25,3 +25,5 @@ router.get("/auth/me", (req, res) => {
   // 2. validate signature
   // 3. renew and return json of cookies for frontend context
 });
+
+module.exports = router;

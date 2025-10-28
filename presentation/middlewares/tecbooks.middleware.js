@@ -1,7 +1,6 @@
-
 // -------Middlewares---------
 // 2 kinds of middlewares:
-// 1. Rate Limiter: 
+// 1. Rate Limiter:
 //      limits apis that trigger email
 //      service to 5 per hour by ip address (redis?)
 // 2. Auth/Session Management:
@@ -11,16 +10,20 @@
 // 3. RBAC:
 //      - user has role to access this route
 
-
 // -------------- MIDDLEWARES -----------------
 
 // 1️⃣ Rate limiter (for email-triggering routes)
-// import rateLimit from 'express-rate-limit';
-// export const emailRateLimiter = rateLimit({
-//   windowMs: 60 * 60 * 1000, // 1 hour
-//   max: 5, // max 5 email sends per IP/hour
-//   message: 'Too many requests, please try again later.',
-// });
+const rateLimit = require("express-rate-limit");
+
+exports.emailRateLimiter = (req, res, next) => {
+  // rateLimit({
+  //     windowMs: 60 * 60 * 1000, // 1 hour
+  //     max: 5, // max 5 email sends per IP/hour
+  //     message: "Too many requests, please try again later.",
+  // })(req, res, next);
+  console.log("We just hit the rate limiter middleware");
+  next();
+};
 
 // JWT Expiration check
 // - just verifies the expiry attribute of the jwt
