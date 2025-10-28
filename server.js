@@ -10,8 +10,13 @@ const cookieParser = require("cookie-parser");
 const robloxRoutes = require("./presentation/routes/roblox.routes");
 
 const server = http.createServer(app);
+const uri = process.env.MONGO_URI;
 
 // Conectar a MongoDB
+mongoose
+  .connect(uri)
+  .then(() => console.log("Conectado a la base de datos de MongoDB"))
+  .catch((error) => console.error("Error al conectar con la base de datos:", error));
 
 app.use(cookieParser());
 
