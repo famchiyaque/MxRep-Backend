@@ -12,6 +12,8 @@ module.exports = router;
 // /auth/me
 // /auth/find-user GET[receive email, check users first, then requests]
 // /auth/login GET[receive email and pass, check against db, create jwt with name, roles, admin_level, expiry]
+
+
 // /auth/logout // not sure we need this one, session exists on frontend
 // /auth/forgot-password (rate-limiter) POST[receive email, send email with link to reset form and jwt in token]
 // /auth/verify-token (verify-token) GET[simply passes through middleware and/or controller func to return status of jwt]
@@ -68,3 +70,8 @@ module.exports = router;
 // /super-admin/approve-institution      // [jwt, role=super-admin]
 // /super-admin/decline-institution      // [jwt, role=super-admin]
 // /super-admin/create-invite-link       // [jwt, role=super-admin] // not sure about this one
+
+
+//mx_rep/login
+
+//regresa nombre, contra, y email

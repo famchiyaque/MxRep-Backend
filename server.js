@@ -10,6 +10,8 @@ const cookieParser = require("cookie-parser");
 const robloxRoutes = require("./presentation/routes/roblox.routes");
 const tecbooksRoutes = require("./presentation/routes/tecbooks.routes");
 
+require("./infrastructure/utils/scripts/first.js")
+
 const server = http.createServer(app);
 const uri = process.env.MONGO_URI;
 
@@ -20,6 +22,9 @@ mongoose
   .catch((error) => console.error("Error al conectar con la base de datos:", error));
 
 app.use(cookieParser());
+
+//async seed()
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
