@@ -1,4 +1,4 @@
-const BoomModel = require("../../models/bom.model.js");
+const BoomModel = require("../models/bom.model.js");
 
 exports.getBom = async (bomId) => {
 
