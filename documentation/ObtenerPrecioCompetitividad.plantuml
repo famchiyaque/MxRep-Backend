@@ -1,0 +1,41 @@
+@startuml ObtenerPrecioCompetitividad.plantuml
+title "Obtener precio de competitividad"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getGenerateUtilityPrice.service.js" as SGUP
+boundary "getGenerateCompetitivityPrice.service.js" as SCP
+
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+loop <font color=red>while currentYear < currentYear + 5 
+   UC ->UC: currentYear += currentYear
+   loop <font color=red> for summary in Summary Year every 12 months
+    note right: Cada año el total \nExpenses and Fiannace debe \nde cambiar de acuerdo al año\n obtenido en obtener\n total gastos
+       UC ->> SGUP: const productPrices = getGenerateUtilityPrice.\ngetGenerateUtilityPrice\n(totalExpenseSCPndFinance)
+        activate SGUP
+        loop <font color=red> for percentage in percentages
+            SGUP ->> SGUP: const percentages = \n[0.1, 0.2, 0.3];
+            SGUP ->> SGUP: const prices = \npercentages.\nmap(p => +(baseValue /(1 - p))\n.toFixed(2));
+            SGUP ->> SGUP: return { tenPercent: prices[0], \ntwentyPercent: prices[1], \nthirtyPercent: prices[2] };
+
+        end
+        SGUP -->> UC: productPrices
+        deactivate SGUP
+        UC -> UC: const competitivityPrice = robloxData.robloxPriceProduct
+        note right: La "inflation" es una premisa \nalamcenada en base \nde datos asi que obten todas\n las premisas\n llamadas "inflation" y en el c\niclo pon la del año actual
+        UC ->> SCP: const productPrices = getGenerateCompetitivityPriceService.\ngetGenerateCompetitivityPrice\n(competitivityPrice, inflation)
+        activate SCP
+            SCP ->> SCP: return (competitivityPrice * (1 + inlfation)).toFixed(2)
+            SCP -->> UC: competitivityPrice
+        deactivate SCP
+    end
+end
+
+        
+       
+deactivate UC
+
+
+@enduml

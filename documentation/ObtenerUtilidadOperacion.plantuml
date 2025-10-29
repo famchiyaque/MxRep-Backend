@@ -1,0 +1,20 @@
+@startuml ObtenerUtilidadOperacion.plantuml
+title "Obtener la utilidad de operacion"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getOperationUtility.service.js" as SBU
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC ->> SBU: const operationUtility = getOperationUtilityService.getOperationUtility(operationExpenses,brutaUtility)
+activate SBU
+SBU ->> SBU: brutalUtility - operationExpenses
+SBU -->> UC: operationUtility
+deactivate SBU
+
+
+deactivate UC
+
+@enduml

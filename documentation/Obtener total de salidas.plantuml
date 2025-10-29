@@ -1,0 +1,19 @@
+@startuml Obtener todas las salidas.plantuml
+title "Obtener Todas las salidas"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getTotalOutcomes.service.js" as SME
+
+activate UC
+
+UC ->> SME: const  totalOutcomes =getTotalOutcomesService.\ngetTotalOutcomes\n({totalExpenses, Investment - JobCapital, amortization, interest, managementExpenses,managementSalary}) 
+activate SME
+SME -->> UC: return Object.values(outComesOutput).reduce((suma, value) => suma + value, 0);
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml

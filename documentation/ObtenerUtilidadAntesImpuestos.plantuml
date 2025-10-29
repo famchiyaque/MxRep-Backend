@@ -1,0 +1,19 @@
+@startuml Obtener Utilidad antes de Impuestos.plantuml
+title "Obtener Utilidad antes de Impuestos"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getBeforeTaxes.service.js" as SME
+
+activate UC
+UC ->: const utilityData = {\nmonthSummary.interest * 12, \nmonthSummary.amortization * 12,\n, operationUtility}
+UC ->> SME: const  utilityBeforeTaxes=getBeforeTaxesService.\ngetBeforeTaxes\n({monthSummary.interest * 12, monthSummary.amortization * 12,\n, operationUtility}); 
+activate SME
+SME -->> UC: return Object.values(depreciationData).reduce((sum, value) => sum + value, 0);
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml

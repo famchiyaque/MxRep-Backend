@@ -1,0 +1,19 @@
+@startuml Obtener Ingreso de Equilibrio costos Variables anuales.plantuml
+title "Obtener Ingreso de equilibrio costos Variables anuales"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getIncomeBalanceVariablesExpensive.service.js" as SCDB
+boundary "getFinalExpenses.service.js" as SCP
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+   UC -> UC: const desireBenefit = 500000
+    UC ->> SME: const incomeBalanceVariablesExpensive = getIncomeBalanceVariablesExpensiveService.getIncomeBalanceVariablesExpensive({\n fixedCostsAnnual,desireBenefit,\n  productPrice, variablesAnnualExpenses, })
+    activate SME
+    SME -->> UC: return  (fixedCostsAnnual + desireBenefit) / ((productPrice - variablesAnnualExpenses)/productPrice);.
+    deactivate SME
+deactivate UC
+
+
+@enduml

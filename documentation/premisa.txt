@@ -1,0 +1,57 @@
+premisas = {
+    name: "default-permises",
+    tipoDeCambio: [15, 9.35, ...],
+    tasaLiderNacional: [0.10, 0.3, ...],
+    cpp: []
+}
+
+
+
+run : {
+    teamId: object("team_id"),
+    createdAt: ajfkdls,
+    lines: [
+        {
+            capital: 1000,
+            employees: [
+                susana: {
+                    contratada: 07/30,
+                    salario: 1000
+                },
+                jared: {
+
+                }
+            ],
+            activos: {
+                machinery: {
+
+                },
+
+            }
+        },
+        {
+
+        }
+    ]
+}
+
+empleados: {
+    id: unique_id,
+    empleados: [
+        {
+            name: 12000
+        }
+    ]
+}
+
+
+
+empleados: {
+    id: unique_id,
+    name:
+    job: objectID("hsjasjamsk")
+}
+
+job: {
+    salar:100
+}

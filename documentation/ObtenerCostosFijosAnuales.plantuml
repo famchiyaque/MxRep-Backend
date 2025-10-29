@@ -1,0 +1,19 @@
+@startuml ObtenerCostosFijosAnuales.plantuml
+title "Obtener Total de costos fijos anuales"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getManagementExpenses.service.js" as SME
+boundary "getFinalExpenses.service.js" as SCP
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+note right: el interest es el interes del credito,\n la suma de salarios es la suma\n de salarios de ingenieria. administrativos y\n la mano de obra de ingenieria,\n la suma de amortizacion es la suma de\n amortizacion e interes del credito
+    UC ->> SME: const fixedCostsAnnual = getFixedCostAnnualService.getFixedCostAnnual({\n interest, engineerSalary + managementSalary + indirecthand,\n amortization + interest })
+    activate SME
+    SME -->> UC: return  Object.values(investment).reduce((suma, value) => suma + value, 0);
+    deactivate SME
+deactivate UC
+
+
+@enduml

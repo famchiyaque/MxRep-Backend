@@ -1,0 +1,55 @@
+@startuml
+title "Obtener desglose del prestamo"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getAmount.service.js" as SAM
+boundary "getAmortization.service.js" as SA
+boundary "getInterest.service.js" as SI
+boundary "generateMonthSumary.service.js" as SGMS
+
+
+C -> UC: generateLoanCreditPayment(dataCreditPayment)
+activate UC
+loop <font color=red>while currentYear < currentYear + 5 
+    loop <font color=red>while currentMonth  < currentMonth + 59
+    alt <font color=#1E8449>if  currentMonth % 12;
+       UC ->UC: currentYear += currentYear
+       UC -> UC: const totalYear = array.reduce\n((totalYearParameter) => \ntotalYearParameter + monthSummary.total, 0);
+       UC -> UC: summaryYear.push(totalYear)
+    end
+
+        UC ->> SI: const currentInterest = \n getInterestService.\ngetInterest\n(tasa,currentAmount)
+        activate SI
+        SI ->> SI: tasa \n/ \n12 * currentAmount
+        SI -->> UC: interest
+        deactivate SI
+        
+        
+        UC ->> SAM: const currentAmount = getAmountService.\ngetAmount\n(dataCreditPayment.amount, dataCreditPayment.periods)
+        activate SAM
+        SAM ->> SAM: amount \n/ \nperiods
+        SAM -->> UC: currentAmount
+        deactivate SAM
+        
+        UC ->> SA: const currentAmortization = \n getAmortizationService.\ngetAmortization\n(currentAmount, investment)
+        activate SA
+        SA ->> SA: investment \n- \namortization
+        SA -->> UC: amortization
+        deactivate SA
+         UC->>SGMS: generateMonthSumaryService.\ngenerateMonthsummary(\ncurrentAmount, \ncurrentAmortization, \ncurremtInterest, \ncurrentYear, \ncurrentMonth)
+        activate SGMS
+        SGMS->> SGMS:  const monthSummary = \n{year: currentYear, \nmonth: currentMonth, \namount: currentAmount, \namortization: currentAmortization\n, interest: currentInterest, \ntotal:currentAmount \n+  currentAmortization+ ,curremtInterest
+         
+        SGMS -->> UC: monthSummary
+        UC -> UC: summaryYear.push(monthSummary)
+    end
+   
+    
+end
+
+
+
+
+deactivate UC
+@enduml

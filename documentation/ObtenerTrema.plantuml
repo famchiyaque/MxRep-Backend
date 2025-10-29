@@ -1,0 +1,20 @@
+@startuml Obtener TREMA.plantuml
+title "Obtener TREMA"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getTREMA.service.js" as SME
+
+activate UC
+UC -> UC: const TREMAPercentages = {inflation, riskAward: 0.1, bestTasaInMexico: 0.8}
+
+UC ->> SME: const  totalTrema =getTREMAService.\getTREMA\n(TREMAPercentages) 
+activate SME
+SME -->> UC: return Object.values(TREMAPercentages).reduce((suma, value) => suma + value, 0);
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml

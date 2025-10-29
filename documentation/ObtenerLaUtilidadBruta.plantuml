@@ -1,0 +1,20 @@
+@startuml ObtenerLaUtilidadBruta.plantuml
+title "Obtener la utilidad bruta"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getBrutaUtility.service.js" as SBU
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC ->> SBU: const brutaUtility = getBrutaUtilityService.getBrutaUtility(finalExpenses,totalIncomes)
+activate SBU
+SBU ->> SBU: totalIncomes - finalExpenses
+SBU -->> UC: brutaUtility
+deactivate SBU
+
+
+deactivate UC
+
+@enduml
