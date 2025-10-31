@@ -1,4 +1,4 @@
-import registerUseCases from "../use-cases/register.use-cases.js"
+import registerUseCases from "../use-cases/register.use-cases.js";
 
 const createProfessorRequest = async (req, res) => {
   const { email, institution, firstNames, lastNames, department } = req.body;
@@ -21,7 +21,7 @@ const createProfessorRequest = async (req, res) => {
 };
 
 const registerControllers = {
-    createProfessorRequest
-}
+  createProfessorRequest,
+};
 
-export default registerControllers
+export default registerControllers;
