@@ -14,13 +14,9 @@ import tecbooksRoutes from "./src/modules/tecbooks/routes/index.routes.js"
 
 const app = express()
 const server = http.createServer(app)
-const uri = process.env.MONGO_URI
+import { connectDB } from "./src/utils/db/db.js"
 
-// Conectar a MongoDB
-mongoose
-  .connect(uri)
-  .then(() => console.log("Conectado a la base de datos de MongoDB"))
-  .catch((error) => console.error("Error al conectar con la base de datos:", error))
+connectDB();
 
 app.use(cookieParser())
 
