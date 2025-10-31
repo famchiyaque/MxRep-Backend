@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import cors from 'cors'
 import express from "express"
 import path from "path"
 import bodyParser from "body-parser"
@@ -17,6 +18,8 @@ const server = http.createServer(app)
 import { connectDB } from "./src/utils/db/db.js"
 
 connectDB();
+
+app.use(cors())
 
 app.use(cookieParser())
 

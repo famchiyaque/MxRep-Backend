@@ -1,5 +1,20 @@
 import registerUseCases from "../use-cases/register.use-cases.js";
 
+const getAllInstitutions = async (req, res) => {
+  try {
+    const institutions = await registerUseCases.getAllInstitutions()
+    return res.status(200).json(institutions);
+  } catch (err) {
+    console.error("[Controller Error] getAllInstitutions:", err.message);
+    
+    // Optionally check for known error types
+    const status = err.statusCode || 500;
+    const message = err.userMessage || "Internal server error";
+
+    return res.status(status).json({ error: message });
+  }
+}
+
 const createProfessorRequest = async (req, res) => {
   const { email, institution, firstNames, lastNames, department } = req.body;
   const institutionId = institution.id;
@@ -21,6 +36,7 @@ const createProfessorRequest = async (req, res) => {
 };
 
 const registerControllers = {
+  getAllInstitutions,
   createProfessorRequest,
 };
 

@@ -1,5 +1,15 @@
 import registerServices from "../services/register.service.js"
 
+const getAllInstitutions = async () => {
+  try {
+    const institutions = await registerServices.getAllInstitutions()
+
+    return institutions
+  } catch (err) {
+    throw new Error(`[UseCase] Failed to fetch institutions: ${err.message}`);
+  }
+}
+
 const professorCreatesRequest = async (
   email,
   institutionId,
@@ -23,6 +33,7 @@ const professorCreatesRequest = async (
 
 
 const registerUseCases = {
+  getAllInstitutions,
   professorCreatesRequest
 }
 

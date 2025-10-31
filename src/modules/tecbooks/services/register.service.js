@@ -1,6 +1,17 @@
 import institutionModel from "#src/shared/models/institution.model.js"
 import professorRequestModel from "#src/shared/models/professorRequest.model.js"
 
+const getAllInstitutions = async () => {
+  try {
+    const institutions = await institutionModel.Institution.find()
+
+    // console.log("Institutions found: ", institutions)
+    return institutions
+  } catch (err) {
+    throw new Error(`[Service] Database query failed: ${err.message}`);
+  }
+}
+
 const createProfessorRequest = async (
   email,
   institutionId,
@@ -43,6 +54,7 @@ const createProfessorRequest = async (
 };
 
 const registerServices = {
+  getAllInstitutions,
   createProfessorRequest
 }
 

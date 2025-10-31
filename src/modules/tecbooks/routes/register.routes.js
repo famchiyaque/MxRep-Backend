@@ -5,7 +5,7 @@ import registerControllers from "../controllers/register.controller.js";
 
 const router = express.Router();
 
-router.get("/get-institutions", (req, res) => {});
+router.get("/get-institutions", registerControllers.getAllInstitutions);
 
 // STUDENT REGISTRY ROUTES: request -> verify -> finalize
 router.post("/student/request", emailRateLimiter, (req, res) => {
