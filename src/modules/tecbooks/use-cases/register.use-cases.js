@@ -71,7 +71,7 @@ const createInstitutionRequest = async (
     // const validInput = inst
 
     // Service 3: Create institution request
-    await institutionRequestService.createInstitutionRequest(
+    const creationResult = await institutionRequestService.createInstitutionRequest(
       institutionName,
       slug,
       domain,
@@ -86,6 +86,10 @@ const createInstitutionRequest = async (
       department
     )
     console.log("[REGISTER USE CASE] got past creation call")
+
+    if (!creationResult.success) {
+      return creationResult; // Propagate the error from the service
+    }
 
     // Service 4: Call email service to alert super-admin
     // To be continued...

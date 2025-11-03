@@ -51,10 +51,10 @@ const createInstitutionRequest = async (req, res) => {
       department
     } = req.body
     console.log("Body: ", req.body)
-    const { institutionName, slug, domain } = institution
+    const { name, slug, domain } = institution
 
     const result = await registerUseCases.createInstitutionRequest(
-      institutionName,
+      name,
       slug,
       domain,
       city,
