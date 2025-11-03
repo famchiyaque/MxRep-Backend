@@ -12,8 +12,44 @@ const getInstitutionById = async (institutionId) => {
   }
 };
 
+const getAllInstitutions = async () => {
+    try {
+      const institutions = await institutionModel.Institution.find()
+  
+      // console.log("Institutions found: ", institutions)
+      return institutions
+    } catch (err) {
+      throw new Error(`[Service] Database query failed: ${err.message}`);
+    }
+}
+
+const checkIfExistsByName = async  (institutionName) => {
+    try {
+        const institution = await institutionModel.Institution.findOne({ name: institutionName })
+        if (!institution) return false
+    
+        return true
+    } catch (err) {
+        throw new Error(`Error querying db for institution: , ${err.message}`)
+    }
+}
+
+const getInstitutionByName = async (instutionName) => {
+    try {
+        const institution = await institutionModel.Institution.findOne({ name: institutionName })
+        if (!institution) throw new Error("No institution found for user")
+    
+        return institution
+    } catch (err) {
+        throw new Error(`Error querying db for institution: , ${err.message}`)
+    }
+}
+
 const institutionService = {
-  getInstitutionById
+  getInstitutionById,
+  getAllInstitutions,
+  checkIfExistsByName,
+  getInstitutionByName
 }
 
 export default institutionService

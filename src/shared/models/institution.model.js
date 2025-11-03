@@ -5,6 +5,7 @@ const InstitutionSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
   country: { type: String },
   city: { type: String },
+  phoneNumber: { type: Number },
   email: { type: String, unique: true },
   domain: { type: String, unique: true },
   slug: { type: String, required: true, unique: true },

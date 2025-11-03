@@ -31,11 +31,7 @@ router.post("/student/finalize", verifyJWT, (req, res) => {
 // PROFESSOR REGISTRY ROUTES:
 // 1. request -> (approved by admin) -> finalize
 // 2. join-from-invite
-router.post(
-  "/professor/request",
-  emailRateLimiter,
-  registerControllers.createProfessorRequest
-);
+router.post("/professor/request", emailRateLimiter, registerControllers.createProfessorRequest);
 
 router.get("/professor/verify-invite-token", verifyJWT, (req, res) => {
   // 1. Verify JWT middleware
@@ -44,6 +40,8 @@ router.get("/professor/verify-invite-token", verifyJWT, (req, res) => {
 });
 
 router.post("/professor/finalize", emailRateLimiter, async (req, res) => {});
+
+router.post("/institution/request", emailRateLimiter, registerControllers.createInstitutionRequest)
 
 router.post("/admin/accept-professor-request", verifyJWT, (req, res) => {});
 

@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs'
 import userModel from "#src/shared/models/user.model.js"
-import institutionModel from "#src/shared/models/institution.model.js"
 
 const findUser = async (email) => {
   try {

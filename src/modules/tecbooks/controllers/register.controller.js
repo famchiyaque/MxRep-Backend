@@ -16,28 +16,73 @@ const getAllInstitutions = async (req, res) => {
 }
 
 const createProfessorRequest = async (req, res) => {
-  const { email, institution, firstNames, lastNames, department } = req.body;
-  const institutionId = institution.id;
-  const institutionName = institution.name;
-  const professorRequest = await registerUseCases.professorCreatesRequest(
-    email,
-    institutionId,
-    firstNames,
-    lastNames,
-    department,
-    institutionName
-  );
+  try {
+    const { email, institutionName, firstNames, lastNames, department } = req.body
 
-  if (professorRequest.success) {
-    return res.status(200).json(professorRequest.data);
-  } else {
-    return res.status(400).json(professorRequest.error);
+    await registerUseCases.createProfessorRequest(
+      institutionName,
+      email,
+      firstNames,
+      lastNames,
+      department
+    )
+
+    return res.json(200).json({ success: true, message: "Professor request created successfully" })
+  } catch (error) {
+    const status = err.statusCode || 500
+    const message = err.userMessage || "Internal server error"
+
+    return res.status(status).json({ error: message })
   }
 };
+
+const createInstitutionRequest = async (req, res) => {
+  try {
+    const { 
+      institution,
+      city, 
+      country, 
+      contactEmail,
+      phoneNumber,
+      email,
+      firstNames,
+      lastNames,
+      role,
+      department
+    } = req.body
+    console.log("Body: ", req.body)
+    const { institutionName, slug, domain } = institution
+
+    await registerUseCases.createInstitutionRequest(
+      institutionName,
+      slug,
+      domain,
+      city,
+      country,
+      contactEmail,
+      phoneNumber,
+      email,
+      firstNames,
+      lastNames,
+      role,
+      department
+    )
+
+    console.log("Success creating instution request, returning success message")
+    return res.status(200).json({ success: true, message: "Institution request made successfully" })
+  } catch (error) {
+    console.log("Error in register institution controller: ", error)
+    const status = err.statusCode || 500
+    const message = err.userMessage || "Internal server error"
+
+    return res.status(status).json({ error: message })
+  }
+}
 
 const registerControllers = {
   getAllInstitutions,
   createProfessorRequest,
+  createInstitutionRequest
 };
 
 export default registerControllers;

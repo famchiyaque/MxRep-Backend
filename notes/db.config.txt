@@ -8,6 +8,7 @@ erDiagram
         string email
         string domain
         string slug
+        boolean active
         date createdAt
     }
 
