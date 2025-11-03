@@ -1,20 +1,22 @@
-import loginService from "../services/auth.service.js"
+import authService from "../services/auth.service.js"
+import institutionService from "../services/institution.service.js"
 
 const login = async (email, password) => {
-  // Placeholder function to simulate user login
-  // In a real implementation, this would query the database
+  try {
+    // Service 1: find and return user
+    const user = await authService.findUser(email)
 
-    // Service 1: findUser
-    const response = await loginService.findUser(email, password); 
+    // Service 2: validate password
+    await authService.validatePasswordHash(user, password)
 
-    if (response.message !== "success") {
-      throw new Error("Authentication failed");
-    }
+    // Service 3: query institution by id
+    const institutionId = user.institutionId
+    const institution = await institutionService.getInstitutionById(institutionId)
 
-    const user = response.user;
-    const institutionDetails = response.institutionDetails;
-
-    return { user, institutionDetails };
+    return { user, institution }
+  } catch (err) {
+    throw new Error(`Error in login use-case , ${err.message}`)
+  }
 };
 
 const authUseCases = {

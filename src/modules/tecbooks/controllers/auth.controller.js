@@ -4,27 +4,26 @@ import generateJWT from "../services/jwt/jwt.js"
 export const login = async (req, res) => {
   try {
     // 1. parse email and password from query params
-    const { email, password } = req.body;
+    const { email, password } = req.body
+    console.log("Email: ", email)
+    console.log("Pass: ", password)
 
-    // 1. Action 1: userLogin model
-    const user = await authUseCases.login(email, password);
+    // 1. Use Case 1: login and get user, institution
+    const { user, institution } = await authUseCases.login(email, password)
 
-    // 2. Action 2: generateJWT service
+    // 2. Service 1: Generate JWT for frontend session
     const token = generateJWT(user, "7 days")
 
-    res.cookie('jwt', token, {
-            httpOnly: true,
-        });
-
-        return res.status(200).json({ 
-            message: "Login successful",
-            user: user 
-        });
-
-        
+    return res.status(200).json({
+      success: true, 
+      message: "Login successful",
+      user: { user, institution },
+      token: token
+    });
      
-      }catch (error) {
-        return res.status(401).json({ message: "Error: Credenciales inválidas" });
+    } catch (error) {
+      console.error("Error authenticating user: ", error)
+      return res.status(401).json({ message: error.message });
     }
 };
 
