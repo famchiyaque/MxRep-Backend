@@ -17,9 +17,14 @@ const findById = async (id) => {
   return await Institution.findOne({ _id: id });
 };
 
+const findByDomain = async (_domain) => {
+  return await Institution.findOne({ domain : _domain })
+};
+
 const institutionModel = {
   Institution,
   findById,
+  findByDomain,
 };
 
 export default institutionModel

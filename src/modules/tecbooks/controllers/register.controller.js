@@ -1,4 +1,6 @@
 import registerUseCases from "../use-cases/register.use-cases.js";
+import sendemailService from "../services/emails/email.service.js"
+import generateJWT from "../services/jwt/jwt.js"
 
 const getAllInstitutions = async (req, res) => {
   try {
@@ -35,9 +37,37 @@ const createProfessorRequest = async (req, res) => {
   }
 };
 
+const createStudentRequest = async (req, res) => {
+  try{
+    const {email} = req.body;
+
+    const institution = await registerUseCases.studentCreateRequest(email);
+
+    // 1.- generate token with institution and email
+
+    const tokenBody = {institution, email}
+
+    const token = generateJWT(tokenBody, "30 minutes")
+
+    // 2.- send email service with token link
+
+    await sendemailService.sendMail(email,token);
+    
+    return res.status(200).json({ 
+      message: "Register successful",
+    });
+
+  }catch(error){
+    console.error("Error en createStudentRequest:", error.message); 
+    
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 const registerControllers = {
   getAllInstitutions,
   createProfessorRequest,
+  createStudentRequest,
 };
 
 export default registerControllers;

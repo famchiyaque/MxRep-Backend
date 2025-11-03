@@ -8,12 +8,7 @@ const router = express.Router();
 router.get("/get-institutions", registerControllers.getAllInstitutions);
 
 // STUDENT REGISTRY ROUTES: request -> verify -> finalize
-router.post("/student/request", emailRateLimiter, (req, res) => {
-  // 1. Rate limiter middleware
-  // 2. validate email matches institution's accepted domains
-  // 3. generate verification token jwt with email, institution
-  // 4. send email that contains button with link with jwt (exp for 1 hour)
-});
+router.post("/student/request", emailRateLimiter, registerControllers.createStudentRequest);
 
 router.get("/student/verify-invite-token", verifyJWT, (req, res) => {
   // 1. Verify JWT middleware

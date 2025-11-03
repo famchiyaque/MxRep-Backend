@@ -31,10 +31,27 @@ const professorCreatesRequest = async (
   return professorRequest;
 };
 
+const studentCreateRequest = async(email) =>{
+
+  const studentRequest = await registerServices.studentRequestService(email);
+
+  console.log("studentRequest:", studentRequest);
+
+  // Verificar si existe la institucion
+  
+  // if( !studentRequest.success ){
+    // console.log("No se encontro institucion para el email:", email);
+    // throw new Error(studentRequest.message);
+  // }
+
+  return studentRequest;
+};
+
 
 const registerUseCases = {
   getAllInstitutions,
-  professorCreatesRequest
+  professorCreatesRequest,
+  studentCreateRequest,
 }
 
 export default registerUseCases

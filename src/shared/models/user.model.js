@@ -26,9 +26,22 @@ const findByEmail = async (email, password) => {
   return null;
 };
 
+const validateUniqueEmail = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (user){
+    throw new Error("User already exits");
+  }
+
+  else{
+    return null;
+  }
+};
+
 const userModel = {
   User,
   findByEmail,
+  validateUniqueEmail,
 };
 
 export default userModel
