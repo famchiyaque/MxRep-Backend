@@ -58,12 +58,12 @@ const createInstitutionRequest = async (
 ) => {
   try {
     // Service 1: See if institution already exists by name
-    const insitutionAlreadyExists = institutionService.checkIfExistsByName(institutionName)
+    const insitutionAlreadyExists = await institutionService.checkIfExistsByName(institutionName)
     if (insitutionAlreadyExists) return { success: false, message: "Institution already exists" }
     console.log("[REGISTER USE CASE] institution doesn't already exist")
 
     // Service 2: See if request already exists by name
-    const requestAlreadyExists = institutionRequestService.checkIfExistsByName(institutionName)
+    const requestAlreadyExists = await institutionRequestService.checkIfExistsByName(institutionName)
     if (requestAlreadyExists) return { success: false, message: "Request already exists" }
     console.log("[REGISTER USE CASE] request doesn't already exist")
 

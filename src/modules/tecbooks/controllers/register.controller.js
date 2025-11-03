@@ -53,7 +53,7 @@ const createInstitutionRequest = async (req, res) => {
     console.log("Body: ", req.body)
     const { institutionName, slug, domain } = institution
 
-    await registerUseCases.createInstitutionRequest(
+    const result = await registerUseCases.createInstitutionRequest(
       institutionName,
       slug,
       domain,
@@ -68,12 +68,16 @@ const createInstitutionRequest = async (req, res) => {
       department
     )
 
+    if (!result.success) {
+      return res.status(409).json({ success: false, error: result.message });
+    }
+
     console.log("Success creating instution request, returning success message")
     return res.status(200).json({ success: true, message: "Institution request made successfully" })
   } catch (error) {
     console.log("Error in register institution controller: ", error)
-    const status = err.statusCode || 500
-    const message = err.userMessage || "Internal server error"
+    const status = error.statusCode || 500
+    const message = error.userMessage || "Internal server error"
 
     return res.status(status).json({ error: message })
   }
