@@ -8,7 +8,7 @@ const createProfessorRequest = async (
     department
   ) => {
     try {
-      await professorRequestModel.create({
+      await professorRequestModel.ProfessorRequest.create({
         institutionId,
         email,
         firstNames,

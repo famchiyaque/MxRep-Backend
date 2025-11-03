@@ -2,10 +2,8 @@ import institutionRequestModel from "#src/shared/models/institutionRequest.model
 
 const checkIfExistsByName = async  (institutionName) => {
     try {
-        const institution = await institutionRequestModel.Institution.findOne({ name: institutionName })
-        if (!institution) return false
-    
-        return true
+        const institution = await institutionRequestModel.InstitutionRequest.findOne({ name: institutionName })
+        return !!institution
     } catch (err) {
         throw new Error(`Error querying db for institution: , ${err.message}`)
     }
@@ -26,7 +24,7 @@ const createInstitutionRequest = async (
     department
 ) => {
     try {
-      await institutionRequestModel.create({
+      await institutionRequestModel.InstitutionRequest.create({
         name: institutionName,
         slug,
         domain,
@@ -44,15 +42,14 @@ const createInstitutionRequest = async (
   
       return {
         success: true,
-        data: newProfessorRequest,
-        message: "Professor request created successfully",
+        message: "Institution request created successfully",
       };
     } catch (error) {
-      console.error("Error creating professor request:", error);
+      console.error("Error creating institution request:", error);
       return {
         success: false,
         error: error.message,
-        message: "Failed to create professor request",
+        message: "Failed to create institution request",
       };
     }
 };

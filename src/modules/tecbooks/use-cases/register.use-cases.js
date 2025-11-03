@@ -90,6 +90,8 @@ const createInstitutionRequest = async (
     // Service 4: Call email service to alert super-admin
     // To be continued...
 
+    return { success: true }
+
   } catch (err) {
     throw new Error(`Error in register institution use-case , ${err.message}`)
   }
