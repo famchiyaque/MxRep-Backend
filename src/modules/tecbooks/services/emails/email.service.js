@@ -1,3 +1,5 @@
+import nodemailer from "nodemailer"
+
 // This service is for creating and sending emails
 // to the correct user with the correct link 
 
@@ -11,6 +13,40 @@
 // - should sign this jwt
 // - should contain button with link to frontend/mxrep/registration/student/finalize
 // - should attach signed jwt as 'token' param in url of button
+
+
+
+const sendMail = async (email,token) => {  
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.GmailUser,
+            pass: process.env.GmailPassword,
+        },
+    });
+
+    const htmlBody = `
+        <b>¡Bienvenido!</b>
+        <p>Haz clic en el siguiente enlace para verificar tu cuenta:</p>
+        <a href="http://localhost:5173/frontend/mxrep/registration/student/finalize?token=${token}">Verificar mi cuenta</a>
+    `;
+
+    (async() => {
+        const info = await transporter.sendMail({
+            from: process.env.GmailName,
+            to: email,
+            subject: "Hello ",
+            text: "Hello world?",
+            html: htmlBody,
+        });
+        console.log("Message sent: %s", info.messageId);
+    })();
+}
+
+export default {
+    sendMail
+};
 
 // 2. Professor Registration Request Email -> Admin
 // - should have the institution and name of new professor

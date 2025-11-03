@@ -1,5 +1,6 @@
 import institutionModel from "#src/shared/models/institution.model.js"
 import professorRequestModel from "#src/shared/models/professorRequest.model.js"
+import userModel from "#src/shared/models/user.model.js"
 
 const getAllInstitutions = async () => {
   try {
@@ -53,9 +54,32 @@ const createProfessorRequest = async (
   }
 };
 
+const studentRequestService = async (email) => {
+  // Validate institution and email exists
+  try {
+
+  await userModel.validateUniqueEmail(email);
+
+  // Extract domain from email
+  const domain = email.split('@')[1];
+
+  // Find institution by domain
+  return await institutionModel.findByDomain(domain); 
+
+  }catch(error){
+    console.log("Error creating student request", error);
+    return {
+      success: false,
+      error: error.message,
+      message: "Failed to create student request",
+    };
+  }
+};
+
 const registerServices = {
   getAllInstitutions,
-  createProfessorRequest
+  createProfessorRequest,
+  studentRequestService,
 }
 
 export default registerServices
