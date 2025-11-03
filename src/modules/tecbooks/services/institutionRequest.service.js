@@ -54,6 +54,22 @@ const createInstitutionRequest = async (
     }
 };
 
+const getAllInsitutionRequests = async () => {
+    try {
+        const requests = await institutionRequestModel.InstitutionRequest.find()
+        return {
+            success: true,
+            requests
+        }
+    } catch (err) {
+        return {
+            success: false,
+            error: error.message,
+            message: "Failed to get institution requests"
+        }
+    }
+}
+
 const institutionRequestService = {
     checkIfExistsByName,
     createInstitutionRequest
