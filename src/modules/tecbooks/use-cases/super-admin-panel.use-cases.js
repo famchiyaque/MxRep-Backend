@@ -14,6 +14,11 @@ const getAllInstitutions = async (decodedToken) => {
   return institutions;
 }
 
+const getInstitutionById = async (institutionId) => {
+  const institution = await institutionService.getInstitutionById(institutionId);
+  return institution;
+}
+
 const getInbox = async (decodedToken) => {
   // Service 1: Check if userId is really super admin
   // As per request, skipping this for now.
@@ -72,6 +77,7 @@ const declineInstitutionRequest = async (requestId) => {
 
 const superAdminPanelUseCases = {
     getAllInstitutions,
+    getInstitutionById,
     getInbox,
     getInstitutionRequest,
     approveInstitutionRequest,

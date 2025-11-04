@@ -10,6 +10,7 @@ const router = express.Router();
 
 // router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox)
 router.get("/get-all-institutions", verifyJWT, rbac.superAdmin, superAdminControllers.getAllInstitutions)
+router.get("/get-institution-by-id", verifyJWT, rbac.superAdmin, superAdminControllers.getInstitutionById)
 router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox);
 router.get("/get-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.getInstitutionRequest)
 router.post("/approve-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.approveInstitutionRequest)

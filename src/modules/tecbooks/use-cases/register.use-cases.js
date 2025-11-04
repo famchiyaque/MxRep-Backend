@@ -91,7 +91,7 @@ const createFirstInstitutionUser = async (
 ) => {
   // Let errors bubble up from service layer
   const newUser = await userService.createUser(
-    newInstitutionId, email, firstNames, lastNames, role, department
+    newInstitutionId, email, firstNames, lastNames, role, department, isAdmin = true
   )
 
   return newUser

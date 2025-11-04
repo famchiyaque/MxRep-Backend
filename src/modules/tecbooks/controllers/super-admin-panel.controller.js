@@ -22,6 +22,27 @@ const getAllInstitutions = async (req, res) => {
   }
 }
 
+const getInstitutionById = async (req, res) => {
+  try {
+    const { institutionId } = req.query
+    const institution = await superAdminPanelUseCases.getInstitutionById(institutionId);
+    return res.status(200).json({
+      success: true,
+      data: institution
+    });
+  } catch (error) {
+    console.error("[Controller] Error getting institution by id:", error)
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
+  }
+}
+
 const getInbox = async (req, res) => {
   try {
     const decodedToken = req.user;
@@ -136,6 +157,7 @@ const declineInstitutionRequest = async (req, res) => {
 
 const superAdminControllers = {
     getAllInstitutions,
+    getInstitutionById,
     getInbox,
     getInstitutionRequest,
     approveInstitutionRequest,

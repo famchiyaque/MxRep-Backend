@@ -3,11 +3,13 @@ import userModel from "#src/shared/models/user.model.js";
 import { DatabaseError } from "#src/utils/errors/AppError.js"
 
 const createUser = async (
-    institutionId, email, firstNames, lastNames, role, department
+    institutionId, email, firstNames, lastNames, role, department, isAdmin
   ) => {
     try {
       const user = await userModel.User.create({
-        institutionId, email, firstNames, lastNames, role, department, needsToConfigurePass: true
+        institutionId, email, firstNames, lastNames, role, department,
+        isAdmin: role === "admin" || role === "super-admin" || (role === "professor" && isAdmin),
+        needsToConfigurePass: true
       })
 
       return user
