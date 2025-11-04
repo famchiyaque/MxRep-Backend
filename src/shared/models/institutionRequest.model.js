@@ -1,11 +1,7 @@
 import mongoose from 'mongoose'
 
 const institutionRequestSchema = new mongoose.Schema({
-//   institutionId: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: "Institution",
-//     required: true,
-//   },
+   _id: mongoose.Schema.Types.ObjectId,
   name: { type: String, required: true },
   slug: { type: String, required: true },
   domain: { type: String, required: true },
@@ -22,7 +18,7 @@ const institutionRequestSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected"],
+    enum: ["pending", "approved", "declined"],
     default: "pending",
   },
   createdAt: {

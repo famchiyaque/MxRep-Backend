@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
   lastNames: { type: String, required: true },
   department: { type: String },
   email: { type: String, required: true, unique: true },
-  passwordHash: { type: String, required: true },
+  passwordHash: { type: String },
   role: { type: String, enum: ["super-admin", "admin", "professor", "student"], required: true },
   isAdmin: { type: Boolean, default: false },
   needsToConfigurePass: { type: Boolean, default: true },

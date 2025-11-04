@@ -5,21 +5,32 @@ export const login = async (req, res) => {
   try {
     // 1. parse email and password from query params
     const { email, password } = req.body
-    console.log("Email: ", email)
-    console.log("Pass: ", password)
+    // console.log("Email: ", email)
+    // console.log("Pass: ", password)
 
-    // 1. Use Case 1: login and get user, institution
+    // 1. Use Case 1: login and get user, validate, get institution
     const { user, institution } = await authUseCases.login(email, password)
+    // console.log("user found: ", user)
+    // console.log("institution found: ", institution)
 
     // 2. Service 1: Generate JWT for frontend session
-    const token = generateJWT(user, "7 days")
+    const token = generateJWT(user, "15 minutes")
+    // console.log("Token being returned: ", token)
 
     return res.status(200).json({
-      success: true, 
+      success: true,
       message: "Login successful",
-      user: { user, institution },
-      token: token
-    });
+      token,
+      user: {
+        ...user.toObject?.() || user, // convert Mongoose doc if needed
+        institution: institution ? {
+          name: institution.name,
+          slug: institution.slug,
+          city: institution.city,
+          country: institution.country,
+        } : null
+      }
+    })
      
     } catch (error) {
       console.error("Error authenticating user: ", error)

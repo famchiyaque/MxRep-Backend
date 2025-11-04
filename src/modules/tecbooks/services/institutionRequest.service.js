@@ -54,7 +54,23 @@ const createInstitutionRequest = async (
     }
 };
 
-const getAllInsitutionRequests = async () => {
+const getInstitutionRequestById = async (requestId) => {
+    try {
+        const request = await institutionRequestModel.InstitutionRequest.findById(requestId)
+        return {
+            success: true,
+            request
+        }
+    } catch (err) {
+        return {
+            success: false,
+            error: err.message,
+            message: "Failed to get institution request by id"
+        }
+    }
+}
+
+const getAllInstitutionRequests = async () => {
     try {
         const requests = await institutionRequestModel.InstitutionRequest.find()
         return {
@@ -64,15 +80,88 @@ const getAllInsitutionRequests = async () => {
     } catch (err) {
         return {
             success: false,
-            error: error.message,
+            error: err.message,
             message: "Failed to get institution requests"
         }
     }
 }
 
+const approveRequest = async (requestId) => {
+    try {
+      // 1. Find + update in ONE atomic DB call
+      const approvedRequest = await institutionRequestModel.InstitutionRequest
+        .findByIdAndUpdate(
+          requestId,                              // filter
+          { $set: { status: 'approved' } },       // update
+          { new: true, runValidators: true }      // options
+        )
+        .lean();   // optional – returns plain JS object (faster)
+  
+      // 2. If nothing matched → return a clear message
+      if (!approvedRequest) {
+        console.log("there was no approved request")
+        return {
+          success: false,
+          message: 'Request not found or already processed',
+        };
+      }
+  
+      // 3. Success shape
+      return {
+        success: true,
+        approvedRequest,
+      };
+    } catch (err) {
+      // Mongoose validation errors, CastError, etc.
+      return {
+        success: false,
+        error: err.message,
+        message: 'Failed to approve request in service',
+      };
+    }
+};
+
+const declineRequest = async (requestId) => {
+  try {
+    // 1. Find + update in ONE atomic DB call
+    const declinedRequest = await institutionRequestModel.InstitutionRequest
+      .findByIdAndUpdate(
+        requestId,                              // filter
+        { $set: { status: 'declined' } },       // update
+        { new: true, runValidators: true }      // options
+      )
+      .lean();   // optional – returns plain JS object (faster)
+
+    // 2. If nothing matched → return a clear message
+    if (!declinedRequest) {
+      return {
+        success: false,
+        message: 'Request not found or already processed',
+      };
+    }
+
+    // 3. Success shape
+    return {
+      success: true,
+      declinedRequest,
+    };
+  } catch (err) {
+    // Mongoose validation errors, CastError, etc.
+    return {
+      success: false,
+      error: err.message,
+      message: 'Failed to decline request in service',
+    };
+  }
+};
+
 const institutionRequestService = {
     checkIfExistsByName,
-    createInstitutionRequest
+    createInstitutionRequest,
+    getInstitutionRequestById,
+    getAllInstitutionRequests,
+    approveRequest,
+    declineRequest
 }
 
 export default institutionRequestService

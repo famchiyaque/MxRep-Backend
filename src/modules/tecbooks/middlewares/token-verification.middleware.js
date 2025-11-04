@@ -4,31 +4,25 @@ import jwt from "jsonwebtoken"
 // - verifies signature
 // - checks token validity
 const verifyJWT = (req, res, next) => {
-    console.log("We just hit the verifyJWT middleware")
-    const { token } = req.params
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  
+    // console.log("We just hit the verifyJWT middleware")
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    // console.log("token pulled: ", token)
 
-    // Step 1: decode
-
-    // Step 2: validate signature
-
-    // Step 3: check expiration
-
-    // Step 4: access information and return token
-
-    // try {
-    //   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    //   req.user = decoded; // { id, role, institution }
-    //   next();
-    // } catch {
-    //   return res.status(403).json({ error: 'Invalid or expired token' });
-    // }
-    const decoded = {
-        userId: "user123",
-        role: "super-admin"
+    if (!token) {
+        console.log("There was no token, returning forbidden")
+        return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
-    next(decoded)
+  
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // console.log("decoded token: ", decoded)
+      req.user = decoded; // Attach decoded payload to req.user
+      next();
+    } catch (err) {
+      console.error("[Middleware Error] verifyJWT:", err.message);
+      return res.status(403).json({ error: 'Forbidden: Invalid or expired token' });
+    }
 };
 
 export default verifyJWT

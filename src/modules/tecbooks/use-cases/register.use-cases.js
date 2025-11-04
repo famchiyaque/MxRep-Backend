@@ -1,4 +1,5 @@
 // import registerServices from "../services/register.service.js"
+import userService from "../services/user.service.js"
 import professorRequestService from "../services/professorRequest.service.js"
 import institutionRequestService from "../services/institutionRequest.service.js"
 import institutionService from "../services/institution.service.js"
@@ -101,11 +102,25 @@ const createInstitutionRequest = async (
   }
 }
 
+const createFirstInstitutionUser = async (
+  newInstitutionId, email, firstNames, lastNames, role, department
+) => {
+  try {
+    const newProfessor = await userService.createUser(
+      newInstitutionId, email, firstNames, lastNames, role, department
+    )
+
+    return newProfessor
+  } catch (err) {
+    throw new Error(`Error creating professor in register use case, ${err.message}`)
+  }
+}
 
 const registerUseCases = {
   getAllInstitutions,
   createProfessorRequest,
-  createInstitutionRequest
+  createInstitutionRequest,
+  createFirstInstitutionUser
 }
 
 export default registerUseCases

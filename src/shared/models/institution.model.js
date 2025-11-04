@@ -9,6 +9,11 @@ const InstitutionSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   domain: { type: String, unique: true },
   slug: { type: String, required: true, unique: true },
+  status: {
+    type: String,
+    enum: ["active", "disactive"],
+    default: "active",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 
