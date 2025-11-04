@@ -8,6 +8,7 @@ erDiagram
         string email
         string domain
         string slug
+        boolean active
         date createdAt
     }
 
@@ -59,7 +60,6 @@ erDiagram
         string professorId FK
         string institutionId FK
         string name
-        string semester
         date createdAt
     }
 

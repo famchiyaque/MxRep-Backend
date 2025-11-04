@@ -10,27 +10,14 @@ router.get("/get-institutions", registerControllers.getAllInstitutions);
 // STUDENT REGISTRY ROUTES: request -> verify -> finalize
 router.post("/student/request", emailRateLimiter, registerControllers.createStudentRequest);
 
-router.get("/student/verify-invite-token", verifyJWT, (req, res) => {
-  // 1. Verify JWT middleware
-  // 4. generate new token with (exp for 15 minutes)
-  // 5. return new token (email, institution, exp)
-});
+router.get("/student/verify-token", verifyJWT, registerControllers.verifyStudentToken);
 
-router.post("/student/finalize", verifyJWT, (req, res) => {
-  // 1. Verify JWT middleware
-  // 2. parse body (name, password, token)
-  // 3. Call create user use-case
-  // 4. generate
-});
+router.post("/student/finalize", verifyJWT, registerControllers.finalizeStudentRegistration);
 
 // PROFESSOR REGISTRY ROUTES:
 // 1. request -> (approved by admin) -> finalize
 // 2. join-from-invite
-router.post(
-  "/professor/request",
-  emailRateLimiter,
-  registerControllers.createProfessorRequest
-);
+router.post("/professor/request", emailRateLimiter, registerControllers.createProfessorRequest);
 
 router.get("/professor/verify-invite-token", verifyJWT, (req, res) => {
   // 1. Verify JWT middleware
@@ -39,6 +26,8 @@ router.get("/professor/verify-invite-token", verifyJWT, (req, res) => {
 });
 
 router.post("/professor/finalize", emailRateLimiter, async (req, res) => {});
+
+router.post("/institution/request", emailRateLimiter, registerControllers.createInstitutionRequest)
 
 router.post("/admin/accept-professor-request", verifyJWT, (req, res) => {});
 

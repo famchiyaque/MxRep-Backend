@@ -4,27 +4,37 @@ import generateJWT from "../services/jwt/jwt.js"
 export const login = async (req, res) => {
   try {
     // 1. parse email and password from query params
-    const { email, password } = req.body;
+    const { email, password } = req.body
+    // console.log("Email: ", email)
+    // console.log("Pass: ", password)
 
-    // 1. Action 1: userLogin model
-    const user = await authUseCases.login(email, password);
+    // 1. Use Case 1: login and get user, validate, get institution
+    const { user, institution } = await authUseCases.login(email, password)
+    // console.log("user found: ", user)
+    // console.log("institution found: ", institution)
 
-    // 2. Action 2: generateJWT service
-    const token = generateJWT(user, "7 days")
+    // 2. Service 1: Generate JWT for frontend session
+    const token = generateJWT(user, "15 minutes")
+    // console.log("Token being returned: ", token)
 
-    res.cookie('jwt', token, {
-            httpOnly: true,
-        });
-
-        return res.status(200).json({ 
-            message: "Login successful",
-            user: user 
-        });
-
-        
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        ...user.toObject?.() || user, // convert Mongoose doc if needed
+        institution: institution ? {
+          name: institution.name,
+          slug: institution.slug,
+          city: institution.city,
+          country: institution.country,
+        } : null
+      }
+    })
      
-      }catch (error) {
-        return res.status(401).json({ message: "Error: Credenciales inválidas" });
+    } catch (error) {
+      console.error("Error authenticating user: ", error)
+      return res.status(401).json({ message: error.message });
     }
 };
 

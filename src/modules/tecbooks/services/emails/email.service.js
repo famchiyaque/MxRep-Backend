@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer"
+import { DatabaseError } from "#src/utils/errors/AppError.js"
+import { getStudentVerificationEmail } from "./templates/studentVerification.template.js"
 
 // This service is for creating and sending emails
 // to the correct user with the correct link 
@@ -6,42 +8,73 @@ import nodemailer from "nodemailer"
 // Should be dynamic, but there are a few use cases to keep in mind:
 
 // 1. Verify Email email to student on registration
-// - should have the institution and email of student
-// - should be sent to correct email
-// - should generate jwt with student institution, email, and expiry in jwt
-// - expiry should only last an hour
-// - should sign this jwt
-// - should contain button with link to frontend/mxrep/registration/student/finalize
-// - should attach signed jwt as 'token' param in url of button
+// 2. Professor Registration Request Email -> Admin
+// 3. Professor registration reminder email -> admin
+// 4. Registry invitation email admin -> professor
+// 5. Game Invite register professor -> students
+// 6. Reset Password email
 
+const sendMail = async (email, token, emailType = 'student-verification') => {  
+    try {
+        // Validate environment variables
+        if (!process.env.GmailUser || !process.env.GmailPassword) {
+            console.error("[Email Service] Missing Gmail credentials in environment variables");
+            throw new DatabaseError("Email service is not configured. Please contact support.");
+        }
 
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GmailUser,
+                pass: process.env.GmailPassword,
+            },
+        });
 
-const sendMail = async (email,token) => {  
+        // Build verification link
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
+        const verificationLink = `${frontendUrl}/mxrep/registration/student/finalize?token=${token}`;
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.GmailUser,
-            pass: process.env.GmailPassword,
-        },
-    });
+        // Get HTML template based on email type
+        let htmlBody;
+        let subject;
+        
+        switch (emailType) {
+            case 'student-verification':
+                htmlBody = getStudentVerificationEmail(verificationLink);
+                subject = "Verify Your TecBooks Account";
+                break;
+            // Add more email types here in the future
+            default:
+                htmlBody = getStudentVerificationEmail(verificationLink);
+                subject = "Verify Your TecBooks Account";
+        }
 
-    const htmlBody = `
-        <b>¡Bienvenido!</b>
-        <p>Haz clic en el siguiente enlace para verificar tu cuenta:</p>
-        <a href="http://localhost:5173/frontend/mxrep/registration/student/finalize?token=${token}">Verificar mi cuenta</a>
-    `;
-
-    (async() => {
         const info = await transporter.sendMail({
-            from: process.env.GmailName,
+            from: `TecBooks <${process.env.GmailUser}>`,
             to: email,
-            subject: "Hello ",
-            text: "Hello world?",
+            subject: subject,
             html: htmlBody,
         });
-        console.log("Message sent: %s", info.messageId);
-    })();
+        
+        console.log("[Email Service] Message sent successfully:", info.messageId);
+        return { success: true, messageId: info.messageId };
+    } catch (err) {
+        console.error("[Email Service] Error sending email:", err);
+        
+        // Handle specific nodemailer errors
+        if (err.code === 'EAUTH') {
+            throw new DatabaseError("Email authentication failed. Please check email credentials.");
+        }
+        
+        if (err.code === 'ECONNECTION') {
+            throw new DatabaseError("Failed to connect to email server. Please try again later.");
+        }
+
+        // Re-throw if already an AppError
+        if (err.statusCode) throw err;
+        
+        throw new DatabaseError(`Failed to send verification email: ${err.message}`, err);
+    }
 }
 
 export default {
