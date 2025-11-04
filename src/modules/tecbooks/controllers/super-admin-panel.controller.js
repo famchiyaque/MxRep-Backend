@@ -1,90 +1,141 @@
 import superAdminPanelUseCases from "../use-cases/super-admin-panel.use-cases.js"
 import registerUseCases from "../use-cases/register.use-cases.js";
 
+const getAllInstitutions = async (req, res) => {
+  try {
+    const decodedToken = req.user;
+    const institutions = await superAdminPanelUseCases.getAllInstitutions(decodedToken);
+    return res.status(200).json({
+      success: true,
+      data: institutions
+    });
+  } catch (error) {
+    console.error("[Controller] Error getting institution request:", error)
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
+  }
+}
+
 const getInbox = async (req, res) => {
   try {
-    const decodedToken = req.user; // Access decoded token from req.user
+    const decodedToken = req.user;
 
     const inbox = await superAdminPanelUseCases.getInbox(decodedToken);
-    return res.status(200).json(inbox);
+    
+    return res.status(200).json({
+      success: true,
+      data: inbox
+    });
   } catch (err) {
-    console.error("[Controller Error] get super admin inbox:", err.message);
+    console.error("[Controller] Error getting super admin inbox:", err);
     
     const status = err.statusCode || 500;
-    const message = err.userMessage || "Internal server error";
+    const message = err.message || "Internal server error";
 
-    return res.status(status).json({ error: message });
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
   }
 }
 
 const getInstitutionRequest = async (req, res) => {
   try {
-    const decoded = req.user
     const { requestId } = req.query
-    // console.log("request id: ", requestId)
 
     const institutionRequest = await superAdminPanelUseCases.getInstitutionRequest(requestId)
-    return res.status(200).json(institutionRequest)
+    
+    return res.status(200).json({
+      success: true,
+      data: institutionRequest
+    })
   } catch (error) {
-    console.erroror("Controller erroror getting institution request: ", error.message)
+    console.error("[Controller] Error getting institution request:", error)
+    
     const status = error.statusCode || 500;
-    const message = error.userMessage || "Internal server error";
-    return res.status(status).json({ error: message });
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
   }
 }
 
 const approveInstitutionRequest = async (req, res) => {
   try {
-    const decoded = req.user
     const { requestId } = req.body
-    console.log("requestId pulled from body: ", requestId)
 
-    // Use Case 1: Approve institution request
+    // Step 1: Approve institution request (updates status to 'approved')
     const approvedRequest = await superAdminPanelUseCases.approveInstitutionRequest(requestId)
-    console.log("Approved request: ", approvedRequest)
 
-    // Use Case 2: Create institution object in db
+    // Step 2: Create institution in database
     const { name, slug, domain, country, city, contactEmail, phoneNumber } = approvedRequest
     const newInstitution = await superAdminPanelUseCases.createInstitution(
       name, slug, domain, country, city, contactEmail, phoneNumber
     )
-    console.log("New institution created: ", newInstitution)
 
-    // Use Case 3: Create first user of this new institution
+    // Step 3: Create first user (admin) for this institution
     const { email, firstNames, lastNames, role, department } = approvedRequest
     const newInstitutionId = newInstitution.id
     const firstUser = await registerUseCases.createFirstInstitutionUser(
       newInstitutionId, email, firstNames, lastNames, role, department
     )
-    console.log("First user of new institution: ", firstUser)
 
-    return res.status(200).json({ success: true, message: "Institution request successfully approved, first inst admin made" })
+    return res.status(201).json({ 
+      success: true, 
+      message: "Institution approved and created successfully",
+      data: {
+        institution: newInstitution,
+        user: firstUser
+      }
+    })
   } catch (error) {
-    console.error("[APPROVE INSTITUTION CONTROLLER] error: ", error.message)
+    console.error("[Controller] Error approving institution request:", error)
+    
     const status = error.statusCode || 500;
-    const message = error.userMessage || "Internal server error";
-    return res.status(status).json({ error: message });
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
   }
 }
 
 const declineInstitutionRequest = async (req, res) => {
   try {
-    const decoded = req.user
     const { requestId } = req.body
 
-    // Use Case 1: Decline institution request
+    // Decline institution request (updates status to 'declined')
     const declinedRequest = await superAdminPanelUseCases.declineInstitutionRequest(requestId)
 
-    return res.status(200).json({ success: true, message: "Institution request successfully declined" })
+    return res.status(200).json({ 
+      success: true, 
+      message: "Institution request successfully declined",
+      data: declinedRequest
+    })
   } catch (error) {
-    console.error("[DECLINE INSTITUTION CONTROLLER] error: ", error.message)
+    console.error("[Controller] Error declining institution request:", error)
+    
     const status = error.statusCode || 500;
-    const message = error.userMessage || "Internal server error";
-    return res.status(status).json({ error: message });
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
   }
 }
 
 const superAdminControllers = {
+    getAllInstitutions,
     getInbox,
     getInstitutionRequest,
     approveInstitutionRequest,

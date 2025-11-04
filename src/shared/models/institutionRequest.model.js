@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 
 const institutionRequestSchema = new mongoose.Schema({
-   _id: mongoose.Schema.Types.ObjectId,
   name: { type: String, required: true },
   slug: { type: String, required: true },
   domain: { type: String, required: true },

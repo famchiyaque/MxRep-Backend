@@ -9,6 +9,7 @@ import superAdminControllers from "../controllers/super-admin-panel.controller.j
 const router = express.Router();
 
 // router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox)
+router.get("/get-all-institutions", verifyJWT, rbac.superAdmin, superAdminControllers.getAllInstitutions)
 router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox);
 router.get("/get-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.getInstitutionRequest)
 router.post("/approve-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.approveInstitutionRequest)

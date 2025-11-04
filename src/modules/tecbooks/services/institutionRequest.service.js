@@ -1,11 +1,12 @@
 import institutionRequestModel from "#src/shared/models/institutionRequest.model.js"
+import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js"
 
 const checkIfExistsByName = async  (institutionName) => {
     try {
         const institution = await institutionRequestModel.InstitutionRequest.findOne({ name: institutionName })
         return !!institution
     } catch (err) {
-        throw new Error(`Error querying db for institution: , ${err.message}`)
+        throw new DatabaseError(`Failed to query institution request by name: ${err.message}`, err)
     }
 }
   
@@ -24,7 +25,7 @@ const createInstitutionRequest = async (
     department
 ) => {
     try {
-      await institutionRequestModel.InstitutionRequest.create({
+      const newRequest = await institutionRequestModel.InstitutionRequest.create({
         name: institutionName,
         slug,
         domain,
@@ -40,118 +41,87 @@ const createInstitutionRequest = async (
         status: "pending",
       });
   
-      return {
-        success: true,
-        message: "Institution request created successfully",
-      };
+      return newRequest;
     } catch (error) {
-      console.error("Error creating institution request:", error);
-      return {
-        success: false,
-        error: error.message,
-        message: "Failed to create institution request",
-      };
+      console.error("[Service] Error creating institution request:", error);
+      throw new DatabaseError(`Failed to create institution request: ${error.message}`, error);
     }
 };
 
 const getInstitutionRequestById = async (requestId) => {
     try {
         const request = await institutionRequestModel.InstitutionRequest.findById(requestId)
-        return {
-            success: true,
-            request
+        
+        if (!request) {
+            throw new NotFoundError(`Institution request with id ${requestId} not found`)
         }
+        
+        return request
     } catch (err) {
-        return {
-            success: false,
-            error: err.message,
-            message: "Failed to get institution request by id"
-        }
+        if (err.statusCode) throw err; // Re-throw if already an AppError
+        
+        console.error("[Service] Error getting institution request by id:", err);
+        throw new DatabaseError(`Failed to get institution request by id: ${err.message}`, err)
     }
 }
 
 const getAllInstitutionRequests = async () => {
     try {
         const requests = await institutionRequestModel.InstitutionRequest.find()
-        return {
-            success: true,
-            requests
-        }
+        return requests
     } catch (err) {
-        return {
-            success: false,
-            error: err.message,
-            message: "Failed to get institution requests"
-        }
+        console.error("[Service] Error getting all institution requests:", err);
+        throw new DatabaseError(`Failed to get institution requests: ${err.message}`, err)
     }
 }
 
 const approveRequest = async (requestId) => {
     try {
-      // 1. Find + update in ONE atomic DB call
+      // Find + update in ONE atomic DB call
       const approvedRequest = await institutionRequestModel.InstitutionRequest
         .findByIdAndUpdate(
-          requestId,                              // filter
-          { $set: { status: 'approved' } },       // update
-          { new: true, runValidators: true }      // options
+          requestId,
+          { $set: { status: 'approved' } },
+          { new: true, runValidators: true }
         )
-        .lean();   // optional – returns plain JS object (faster)
+        .lean();
   
-      // 2. If nothing matched → return a clear message
+      // If nothing matched, throw NotFoundError
       if (!approvedRequest) {
-        console.log("there was no approved request")
-        return {
-          success: false,
-          message: 'Request not found or already processed',
-        };
+        throw new NotFoundError('Institution request not found or already processed');
       }
   
-      // 3. Success shape
-      return {
-        success: true,
-        approvedRequest,
-      };
+      return approvedRequest;
     } catch (err) {
-      // Mongoose validation errors, CastError, etc.
-      return {
-        success: false,
-        error: err.message,
-        message: 'Failed to approve request in service',
-      };
+      if (err.statusCode) throw err; // Re-throw if already an AppError
+      
+      console.error("[Service] Error approving request:", err);
+      throw new DatabaseError(`Failed to approve request: ${err.message}`, err);
     }
 };
 
 const declineRequest = async (requestId) => {
   try {
-    // 1. Find + update in ONE atomic DB call
+    // Find + update in ONE atomic DB call
     const declinedRequest = await institutionRequestModel.InstitutionRequest
       .findByIdAndUpdate(
-        requestId,                              // filter
-        { $set: { status: 'declined' } },       // update
-        { new: true, runValidators: true }      // options
+        requestId,
+        { $set: { status: 'declined' } },
+        { new: true, runValidators: true }
       )
-      .lean();   // optional – returns plain JS object (faster)
+      .lean();
 
-    // 2. If nothing matched → return a clear message
+    // If nothing matched, throw NotFoundError
     if (!declinedRequest) {
-      return {
-        success: false,
-        message: 'Request not found or already processed',
-      };
+      throw new NotFoundError('Institution request not found or already processed');
     }
 
-    // 3. Success shape
-    return {
-      success: true,
-      declinedRequest,
-    };
+    return declinedRequest;
   } catch (err) {
-    // Mongoose validation errors, CastError, etc.
-    return {
-      success: false,
-      error: err.message,
-      message: 'Failed to decline request in service',
-    };
+    if (err.statusCode) throw err; // Re-throw if already an AppError
+    
+    console.error("[Service] Error declining request:", err);
+    throw new DatabaseError(`Failed to decline request: ${err.message}`, err);
   }
 };
 

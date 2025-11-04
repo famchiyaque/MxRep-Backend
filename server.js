@@ -25,7 +25,8 @@ connectDB();
 
 // app.use(cors())
 app.use(cors({
-  origin: 'http://localhost:8322',  // ← MUST match EXACTLY
+  // origin: 'http://localhost:8322',  // ← MUST match EXACTLY
+  origin: '*',
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

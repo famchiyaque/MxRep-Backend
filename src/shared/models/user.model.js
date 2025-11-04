@@ -1,7 +1,6 @@
 import mongoose from 'mongoose'
 
 const UserSchema = new mongoose.Schema({
-  _id: mongoose.Schema.Types.ObjectId,
   institutionId: { type: mongoose.Schema.Types.ObjectId, ref: "Institution", required: true },
   firstNames: { type: String, required: true },
   lastNames: { type: String, required: true },
