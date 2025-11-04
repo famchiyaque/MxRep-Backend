@@ -12,18 +12,32 @@ const getAllInstitutions = async () => {
 }
 
 const createProfessorRequest = async (
-  institutionName,
+  institution,
   email,
   firstNames,
   lastNames,
   department,
+  emailService
 ) => {
-  // Service 1: Validate that institution exists
-  const institution = await institutionService.getInstitutionByName(institutionName)
-  const institutionId = institution.id
+  const institutionId = institution.id;
+  
+  // Service 1: Verify institution exists in database (security check)
+  await institutionService.getInstitutionById(institutionId);
 
-  // Service 2: Create the request
-  await professorRequestService.professorRequestService(
+  // Service 2: Check if user already exists with this email
+  const userExists = await userService.checkEmailExists(email);
+  if (userExists) {
+    throw new ConflictError("A user with this email already exists");
+  }
+
+  // Service 3: Check if there's already a pending request
+  const requestExists = await professorRequestService.checkProfessorRequestExists(institutionId, email);
+  if (requestExists) {
+    throw new ConflictError("A pending professor request already exists for this email");
+  }
+
+  // Service 4: Create the professor request
+  const newRequest = await professorRequestService.createProfessorRequest(
     institutionId,
     email,
     firstNames,
@@ -31,8 +45,40 @@ const createProfessorRequest = async (
     department
   );
 
-  // Service 3: Notify institution admin by email
-  // to be continued...
+  // Service 5: Find institution admins
+  const admins = await userService.getInstitutionAdmins(institutionId);
+  
+  if (admins.length === 0) {
+    console.warn(`[Use Case] No admins found for institution ${institutionId}. Skipping email notification.`);
+    return newRequest;
+  }
+
+  // Service 6: Send email notification to all admins
+  const professorFullName = `${firstNames} ${lastNames}`;
+  
+  for (const admin of admins) {
+    try {
+      const adminFullName = `${admin.firstNames} ${admin.lastNames}`;
+      await emailService.sendMail(
+        admin.email,
+        null, // No token needed for this email type
+        'professor-request-notification',
+        {
+          adminName: adminFullName,
+          professorName: professorFullName,
+          professorEmail: email,
+          department: department || 'Not specified',
+          institutionSlug: institution.slug
+        }
+      );
+      console.log(`[Use Case] Notification email sent to admin: ${admin.email}`);
+    } catch (emailError) {
+      // Log but don't fail the request if email fails
+      console.error(`[Use Case] Failed to send email to admin ${admin.email}:`, emailError);
+    }
+  }
+
+  return newRequest;
 };
 
 const createStudentRequest = async (email, institution) => {

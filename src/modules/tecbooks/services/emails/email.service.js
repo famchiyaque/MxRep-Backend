@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer"
 import { DatabaseError } from "#src/utils/errors/AppError.js"
 import { getStudentVerificationEmail } from "./templates/studentVerification.template.js"
+import { getProfessorRequestNotificationEmail } from "./templates/professorRequestNotification.template.js"
 
 // This service is for creating and sending emails
 // to the correct user with the correct link 
@@ -14,7 +15,7 @@ import { getStudentVerificationEmail } from "./templates/studentVerification.tem
 // 5. Game Invite register professor -> students
 // 6. Reset Password email
 
-const sendMail = async (email, token, emailType = 'student-verification') => {  
+const sendMail = async (email, token, emailType = 'student-verification', additionalData = {}) => {  
     try {
         // Validate environment variables
         if (!process.env.GmailUser || !process.env.GmailPassword) {
@@ -30,23 +31,37 @@ const sendMail = async (email, token, emailType = 'student-verification') => {
             },
         });
 
-        // Build verification link
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
-        const verificationLink = `${frontendUrl}/mxrep/registration/student/finalize?token=${token}`;
-
         // Get HTML template based on email type
         let htmlBody;
         let subject;
         
         switch (emailType) {
-            case 'student-verification':
+            case 'student-verification': {
+                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
+                const verificationLink = `${frontendUrl}/mxrep/registry/student/finalize?token=${token}`;
                 htmlBody = getStudentVerificationEmail(verificationLink);
                 subject = "Verify Your TecBooks Account";
                 break;
+            }
+            case 'professor-request-notification': {
+                const { adminName, professorName, professorEmail, department, institutionSlug } = additionalData;
+                htmlBody = getProfessorRequestNotificationEmail(
+                    adminName, 
+                    professorName, 
+                    professorEmail, 
+                    department, 
+                    institutionSlug
+                );
+                subject = "New Professor Request - TecBooks";
+                break;
+            }
             // Add more email types here in the future
-            default:
+            default: {
+                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
+                const verificationLink = `${frontendUrl}/mxrep/registry/student/finalize?token=${token}`;
                 htmlBody = getStudentVerificationEmail(verificationLink);
                 subject = "Verify Your TecBooks Account";
+            }
         }
 
         const info = await transporter.sendMail({

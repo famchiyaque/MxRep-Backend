@@ -25,19 +25,37 @@ const getAllInstitutions = async (req, res) => {
 
 const createProfessorRequest = async (req, res) => {
   try {
-    const { email, institutionName, firstNames, lastNames, department } = req.body
+    const { email, institution, firstNames, lastNames, department } = req.body
+    console.log("email: ", email)
+    console.log("institution: ", institution)
+    console.log("firstNames: ", firstNames)
+    console.log("lastNames: ", lastNames)
+    console.log("department: ", department)
 
-    await registerUseCases.createProfessorRequest(
-      institutionName,
+    // Validate required fields
+    if (!email || !institution || !firstNames || !lastNames) {
+      return res.status(400).json({
+        success: false,
+        error: "Email, institution, first name, and last name are required"
+      });
+    }
+
+    const newRequest = await registerUseCases.createProfessorRequest(
+      institution,
       email,
       firstNames,
       lastNames,
-      department
+      department,
+      sendemailService // Pass email service for notifications
     )
 
     return res.status(201).json({ 
       success: true, 
-      message: "Professor request created successfully" 
+      message: "Professor request created successfully. Institution admins have been notified.",
+      data: {
+        requestId: newRequest._id,
+        status: newRequest.status
+      }
     })
   } catch (error) {
     console.error("[Controller] Error creating professor request:", error)
@@ -142,8 +160,8 @@ const createInstitutionRequest = async (req, res) => {
 const verifyStudentToken = async (req, res) => {
   try {
     // Token is already verified by verifyJWT middleware
-    // req.user contains the decoded token payload
-    const { email, institutionId, institutionName, type } = req.user;
+    // req.user.body contains the actual payload (JWT wraps it in 'body')
+    const { email, institutionId, institutionName, type } = req.user.body;
 
     // Validate token type
     if (type !== 'student-registration') {
@@ -188,14 +206,29 @@ const verifyStudentToken = async (req, res) => {
 const finalizeStudentRegistration = async (req, res) => {
   try {
     // Token is already verified by verifyJWT middleware
-    const { email, institutionId, type } = req.user;
+    // req.user.body contains the actual payload (JWT wraps it in 'body')
+    const { email, institutionId, type } = req.user.body;
     const { firstNames, lastNames, password, department } = req.body;
+    console.log("body: ", req.body)
+
+    console.log("[Controller] Finalize student registration data:");
+    console.log("  - Email from token:", email);
+    console.log("  - Institution ID:", institutionId);
+    console.log("  - Request body:", { firstNames, lastNames, password: password ? '***' : undefined, department });
 
     // Validate token type
     if (type !== 'student-registration') {
       return res.status(403).json({
         success: false,
         error: "Invalid token type"
+      });
+    }
+
+    // Validate required fields
+    if (!firstNames || !lastNames || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "First name, last name, and password are required"
       });
     }
 

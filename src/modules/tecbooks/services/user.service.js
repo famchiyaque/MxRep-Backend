@@ -39,11 +39,21 @@ const checkEmailExists = async (email) => {
 
 const hashPassword = async (password) => {
   try {
+    // Validate password exists
+    if (!password) {
+      throw new DatabaseError("Password is required");
+    }
+
+    // Use 10 salt rounds (good balance of security and performance)
     const saltRounds = 10;
     const hash = await bcrypt.hash(password, saltRounds);
     return hash;
   } catch (err) {
     console.error("[Service] Error hashing password:", err);
+    
+    // Re-throw if already an AppError
+    if (err.statusCode) throw err;
+    
     throw new DatabaseError(`Failed to hash password: ${err.message}`, err);
   }
 };
@@ -78,6 +88,24 @@ const createStudentWithPassword = async (
   }
 };
 
+const getInstitutionAdmins = async (institutionId) => {
+  try {
+    // Find users who are admins for this institution
+    const admins = await userModel.User.find({
+      institutionId,
+      $or: [
+        { role: "admin" },
+        { isAdmin: true }
+      ]
+    }).select('email firstNames lastNames role');
+
+    return admins;
+  } catch (err) {
+    console.error("[Service] Error getting institution admins:", err);
+    throw new DatabaseError(`Failed to get institution admins: ${err.message}`, err);
+  }
+};
+
 // const finalizeUser = async (
 
 // )
@@ -87,6 +115,7 @@ const userService = {
     checkEmailExists,
     hashPassword,
     createStudentWithPassword,
+    getInstitutionAdmins,
 }
 
 export default userService
