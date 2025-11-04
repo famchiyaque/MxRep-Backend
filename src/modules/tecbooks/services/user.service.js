@@ -1,6 +1,6 @@
 import professorModel from "#src/shared/models/professorRequest.model.js"
 import userModel from "#src/shared/models/user.model.js";
-import { DatabaseError } from "#src/utils/errors/AppError.js"
+import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js"
 import bcrypt from "bcrypt"
 
 const createUser = async (
@@ -110,12 +110,72 @@ const getInstitutionAdmins = async (institutionId) => {
 
 // )
 
+const getUserById = async (userId) => {
+  try {
+    const user = await userModel.User.findById(userId);
+    
+    if (!user) {
+      throw new NotFoundError(`User with id ${userId} not found`);
+    }
+
+    return user;
+  } catch (err) {
+    if (err.statusCode) throw err; // Re-throw if already an AppError
+    
+    console.error("[Service] Error getting user by id:", err);
+    throw new DatabaseError(`Failed to get user: ${err.message}`, err);
+  }
+};
+
+const completeUserSetup = async (userId, passwordHash) => {
+  try {
+    const updatedUser = await userModel.User.findByIdAndUpdate(
+      userId,
+      { 
+        $set: { 
+          passwordHash,
+          needsToConfigurePass: false 
+        } 
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      throw new NotFoundError(`User with id ${userId} not found`);
+    }
+
+    return updatedUser;
+  } catch (err) {
+    if (err.statusCode) throw err; // Re-throw if already an AppError
+    
+    console.error("[Service] Error completing user setup:", err);
+    throw new DatabaseError(`Failed to complete user setup: ${err.message}`, err);
+  }
+};
+
+const getUsersByInstitutionAndRole = async (institutionId, role) => {
+  try {
+    const users = await userModel.User.find({
+      institutionId,
+      role
+    }).select('-passwordHash').sort({ createdAt: -1 });
+
+    return users;
+  } catch (err) {
+    console.error(`[Service] Error getting ${role}s by institution:`, err);
+    throw new DatabaseError(`Failed to get ${role}s: ${err.message}`, err);
+  }
+};
+
 const userService = {
     createUser,
     checkEmailExists,
     hashPassword,
     createStudentWithPassword,
     getInstitutionAdmins,
+    getUserById,
+    completeUserSetup,
+    getUsersByInstitutionAndRole,
 }
 
 export default userService

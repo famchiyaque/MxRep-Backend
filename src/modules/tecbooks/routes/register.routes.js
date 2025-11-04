@@ -29,6 +29,10 @@ router.post("/professor/finalize", emailRateLimiter, async (req, res) => {});
 
 router.post("/institution/request", emailRateLimiter, registerControllers.createInstitutionRequest)
 
+// ACCOUNT SETUP ROUTES (for admins and professors after approval)
+router.get("/account/verify-token", verifyJWT, registerControllers.verifyAccountSetupToken);
+router.post("/account/setup", verifyJWT, registerControllers.completeAccountSetup);
+
 router.post("/admin/accept-professor-request", verifyJWT, (req, res) => {});
 
 router.post("/admin/decline-professor-request", verifyJWT, (req, res) => {});

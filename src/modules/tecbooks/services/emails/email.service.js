@@ -2,6 +2,7 @@ import nodemailer from "nodemailer"
 import { DatabaseError } from "#src/utils/errors/AppError.js"
 import { getStudentVerificationEmail } from "./templates/studentVerification.template.js"
 import { getProfessorRequestNotificationEmail } from "./templates/professorRequestNotification.template.js"
+import { getAccountSetupEmail } from "./templates/accountSetup.template.js"
 
 // This service is for creating and sending emails
 // to the correct user with the correct link 
@@ -53,6 +54,15 @@ const sendMail = async (email, token, emailType = 'student-verification', additi
                     institutionSlug
                 );
                 subject = "New Professor Request - TecBooks";
+                break;
+            }
+            case 'admin-account-setup':
+            case 'professor-account-setup': {
+                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
+                const setupLink = `${frontendUrl}/mxrep/account/setup?token=${token}`;
+                const { userName, institutionName, role } = additionalData;
+                htmlBody = getAccountSetupEmail(userName, institutionName, role, setupLink);
+                subject = "Set Up Your TecBooks Account";
                 break;
             }
             // Add more email types here in the future

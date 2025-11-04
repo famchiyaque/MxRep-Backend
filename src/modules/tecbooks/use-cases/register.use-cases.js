@@ -191,12 +191,59 @@ const finalizeStudentRegistration = async (
   return newStudent;
 }
 
+const verifyAccountSetupToken = async (userId, email) => {
+  // Service 1: Find user by ID and email
+  const user = await userService.getUserById(userId);
+  
+  // Service 2: Verify email matches
+  if (user.email !== email) {
+    throw new BadRequestError("Token email does not match user email");
+  }
+
+  // Service 3: Check if user still needs to configure password
+  if (!user.needsToConfigurePass) {
+    throw new ConflictError("Account has already been set up");
+  }
+
+  // Return user data for frontend
+  return {
+    email: user.email,
+    firstNames: user.firstNames,
+    lastNames: user.lastNames,
+    role: user.role,
+    institutionId: user.institutionId
+  };
+};
+
+const completeAccountSetup = async (userId, email, password) => {
+  // Service 1: Find user and verify they need setup
+  const user = await userService.getUserById(userId);
+  
+  if (user.email !== email) {
+    throw new BadRequestError("Token email does not match user email");
+  }
+
+  if (!user.needsToConfigurePass) {
+    throw new ConflictError("Account has already been set up");
+  }
+
+  // Service 2: Hash password
+  const passwordHash = await userService.hashPassword(password);
+
+  // Service 3: Update user with password and mark as configured
+  const updatedUser = await userService.completeUserSetup(userId, passwordHash);
+
+  return updatedUser;
+};
+
 const registerUseCases = {
   getAllInstitutions,
   createProfessorRequest,
   createStudentRequest,
   checkEmailAvailability,
   finalizeStudentRegistration,
+  verifyAccountSetupToken,
+  completeAccountSetup,
   createInstitutionRequest,
   createFirstInstitutionUser
 }

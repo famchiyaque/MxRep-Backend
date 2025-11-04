@@ -203,6 +203,44 @@ const verifyStudentToken = async (req, res) => {
   }
 };
 
+const verifyAccountSetupToken = async (req, res) => {
+  try {
+    // Token is already verified by verifyJWT middleware
+    // req.user.body contains the actual payload (JWT wraps it in 'body')
+    const tokenData = req.user.body;
+    const { email, userId, type } = tokenData;
+
+    // Validate token type is for account setup
+    const validTypes = ['admin-account-setup', 'professor-account-setup'];
+    if (!validTypes.includes(type)) {
+      return res.status(403).json({
+        success: false,
+        error: "Invalid token type for account setup"
+      });
+    }
+
+    // Verify user and get their details
+    const userData = await registerUseCases.verifyAccountSetupToken(userId, email);
+
+    // Return validated data for the frontend form
+    return res.status(200).json({
+      success: true,
+      message: "Token is valid",
+      data: userData
+    });
+  } catch (error) {
+    console.error("[Controller] Error verifying account setup token:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
 const finalizeStudentRegistration = async (req, res) => {
   try {
     // Token is already verified by verifyJWT middleware
@@ -265,12 +303,71 @@ const finalizeStudentRegistration = async (req, res) => {
   }
 };
 
+const completeAccountSetup = async (req, res) => {
+  try {
+    // Token is already verified by verifyJWT middleware
+    // req.user.body contains the actual payload (JWT wraps it in 'body')
+    const { email, userId, type } = req.user.body;
+    const { password } = req.body;
+
+    console.log("[Controller] Complete account setup:");
+    console.log("  - Email from token:", email);
+    console.log("  - User ID:", userId);
+    console.log("  - Type:", type);
+    console.log("  - Has password:", !!password);
+
+    // Validate token type
+    const validTypes = ['admin-account-setup', 'professor-account-setup'];
+    if (!validTypes.includes(type)) {
+      return res.status(403).json({
+        success: false,
+        error: "Invalid token type for account setup"
+      });
+    }
+
+    // Validate password
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        error: "Password is required"
+      });
+    }
+
+    // Complete the account setup
+    const updatedUser = await registerUseCases.completeAccountSetup(userId, email, password);
+
+    return res.status(200).json({
+      success: true,
+      message: "Account setup completed successfully. You can now log in.",
+      data: {
+        userId: updatedUser._id,
+        email: updatedUser.email,
+        firstNames: updatedUser.firstNames,
+        lastNames: updatedUser.lastNames,
+        role: updatedUser.role
+      }
+    });
+  } catch (error) {
+    console.error("[Controller] Error completing account setup:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
 const registerControllers = {
   getAllInstitutions,
   createProfessorRequest,
   createStudentRequest,
   verifyStudentToken,
+  verifyAccountSetupToken,
   finalizeStudentRegistration,
+  completeAccountSetup,
   createInstitutionRequest
 };
 

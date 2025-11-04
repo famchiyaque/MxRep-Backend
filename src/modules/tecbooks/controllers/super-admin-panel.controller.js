@@ -1,5 +1,7 @@
 import superAdminPanelUseCases from "../use-cases/super-admin-panel.use-cases.js"
 import registerUseCases from "../use-cases/register.use-cases.js";
+import sendemailService from "../services/emails/email.service.js"
+import generateJWT from "../services/jwt/jwt.js"
 
 const getAllInstitutions = async (req, res) => {
   try {
@@ -109,12 +111,45 @@ const approveInstitutionRequest = async (req, res) => {
       newInstitutionId, email, firstNames, lastNames, role, department
     )
 
+    // Step 4: Generate account setup token (2 days expiry)
+    const setupToken = generateJWT({
+      email: firstUser.email,
+      userId: firstUser._id,
+      type: 'admin-account-setup'
+    }, "2 days");
+
+    // Step 5: Send account setup email
+    try {
+      const userName = `${firstUser.firstNames} ${firstUser.lastNames}`;
+      await sendemailService.sendMail(
+        firstUser.email,
+        setupToken,
+        'admin-account-setup',
+        {
+          userName,
+          institutionName: newInstitution.name,
+          role: firstUser.role
+        }
+      );
+      console.log(`[Controller] Account setup email sent to: ${firstUser.email}`);
+    } catch (emailError) {
+      // Log but don't fail the request if email fails
+      console.error("[Controller] Failed to send setup email:", emailError);
+    }
+
     return res.status(201).json({ 
       success: true, 
-      message: "Institution approved and created successfully",
+      message: "Institution approved and created successfully. Setup email sent to admin.",
       data: {
         institution: newInstitution,
-        user: firstUser
+        user: {
+          id: firstUser._id,
+          email: firstUser.email,
+          firstNames: firstUser.firstNames,
+          lastNames: firstUser.lastNames,
+          role: firstUser.role,
+          needsToConfigurePass: firstUser.needsToConfigurePass
+        }
       }
     })
   } catch (error) {

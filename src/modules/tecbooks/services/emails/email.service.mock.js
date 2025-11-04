@@ -1,21 +1,44 @@
 // Mock email service for development/testing
 // Use this when you don't have Gmail credentials configured
 
-const sendMail = async (email, token, emailType = 'student-verification') => {  
+const sendMail = async (email, token, emailType = 'student-verification', additionalData = {}) => {  
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8322';
-    const verificationLink = `${frontendUrl}/mxrep/registration/student/finalize?token=${token}`;
+    
+    let link, subject;
+    
+    switch(emailType) {
+        case 'student-verification':
+            link = `${frontendUrl}/mxrep/registry/student/finalize?token=${token}`;
+            subject = 'Verify Your TecBooks Account';
+            break;
+        case 'professor-request-notification':
+            link = `${frontendUrl}/mxrep/${additionalData.institutionSlug}/admin-panel/inbox`;
+            subject = 'New Professor Request - TecBooks';
+            break;
+        case 'admin-account-setup':
+        case 'professor-account-setup':
+            link = `${frontendUrl}/mxrep/account/setup?token=${token}`;
+            subject = 'Set Up Your TecBooks Account';
+            break;
+        default:
+            link = `${frontendUrl}/mxrep/registry/student/finalize?token=${token}`;
+            subject = 'TecBooks Notification';
+    }
     
     console.log("\n╔════════════════════════════════════════════════════════════════╗");
     console.log("║                  📧 MOCK EMAIL SERVICE                         ║");
     console.log("╠════════════════════════════════════════════════════════════════╣");
     console.log(`║ To:      ${email.padEnd(52)}║`);
-    console.log(`║ Subject: Verify Your TecBooks Account${' '.repeat(26)}║`);
+    console.log(`║ Subject: ${subject.substring(0, 52).padEnd(52)}║`);
     console.log(`║ Type:    ${emailType.padEnd(52)}║`);
     console.log("╠════════════════════════════════════════════════════════════════╣");
-    console.log("║ 🔗 VERIFICATION LINK:                                          ║");
-    console.log(`║ ${verificationLink.substring(0, 60).padEnd(60)}║`);
-    if (verificationLink.length > 60) {
-        console.log(`║ ${verificationLink.substring(60).padEnd(60)}║`);
+    console.log("║ 🔗 LINK:                                                       ║");
+    console.log(`║ ${link.substring(0, 60).padEnd(60)}║`);
+    if (link.length > 60) {
+        console.log(`║ ${link.substring(60, 120).padEnd(60)}║`);
+    }
+    if (link.length > 120) {
+        console.log(`║ ${link.substring(120, 180).padEnd(60)}║`);
     }
     console.log("╠════════════════════════════════════════════════════════════════╣");
     console.log("║ ✅ Email would be sent with beautiful HTML template           ║");
@@ -25,7 +48,7 @@ const sendMail = async (email, token, emailType = 'student-verification') => {
     return { 
         success: true, 
         messageId: `mock-${Date.now()}`,
-        note: "Mock email - check console for verification link" 
+        note: "Mock email - check console for link" 
     };
 }
 
