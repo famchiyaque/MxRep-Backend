@@ -2,6 +2,130 @@ import adminPanelUseCases from "../use-cases/admin-panel.use-cases.js";
 import sendemailService from "../services/emails/email.service.js";
 import generateJWT from "../services/jwt/jwt.js";
 
+const inviteProfessor = async (req, res) => {
+  try {
+    const { firstNames, lastNames, email, department } = req.body;
+    const decodedToken = req.user;
+    const { institutionId } = decodedToken.body;
+
+    console.log("[Controller] Inviting professor:", { firstNames, lastNames, email, department });
+
+    // Validate required fields
+    if (!firstNames || !lastNames || !email) {
+      return res.status(400).json({
+        success: false,
+        error: "First name, last name, and email are required"
+      });
+    }
+
+    // Step 1: Create professor user with needsToConfigurePass = true
+    const result = await adminPanelUseCases.inviteProfessor(
+      institutionId,
+      email,
+      firstNames,
+      lastNames,
+      department
+    );
+
+    // Step 2: Generate account setup token (2 days expiry)
+    const setupToken = generateJWT({
+      email: result.user.email,
+      userId: result.user._id,
+      type: 'professor-account-setup'
+    }, "2 days");
+
+    // Step 3: Send account setup email
+    try {
+      const userName = `${result.user.firstNames} ${result.user.lastNames}`;
+      await sendemailService.sendMail(
+        result.user.email,
+        setupToken,
+        'professor-account-setup',
+        {
+          userName,
+          institutionName: result.institutionName,
+          role: result.user.role
+        }
+      );
+      console.log(`[Controller] Account setup email sent to: ${result.user.email}`);
+    } catch (emailError) {
+      // Log but don't fail the request if email fails
+      console.error("[Controller] Failed to send setup email:", emailError);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Professor invited successfully. Setup email sent.",
+      data: {
+        user: {
+          id: result.user._id,
+          email: result.user.email,
+          firstNames: result.user.firstNames,
+          lastNames: result.user.lastNames,
+          role: result.user.role,
+          needsToConfigurePass: result.user.needsToConfigurePass
+        }
+      }
+    });
+  } catch (error) {
+    console.error("[Controller] Error inviting professor:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
+const getProfessor = async (req, res) => {
+  try {
+    console.log("Getting professor...");
+    const decodedToken = req.user;
+    const { professorId } = req.query;
+
+    const professor = await adminPanelUseCases.getUserById(professorId);
+    console.log("professor: ", professor);
+    return res.status(200).json({
+      success: true,
+      data: professor
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
+  }
+}
+
+const getStudent = async (req, res) => {
+  try {
+    const decodedToken = req.user;
+    const { studentId } = req.query;
+    console.log("studentId: ", studentId);
+
+    const student = await adminPanelUseCases.getUserById(studentId);
+    console.log("student: ", student);
+    return res.status(200).json({
+      success: true,
+      data: student
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({ 
+      success: false,
+      error: message 
+    });
+  }
+}
+
 const getInbox = async (req, res) => {
   try {
     const decodedToken = req.user;
@@ -139,12 +263,10 @@ const declineProfessorRequest = async (req, res) => {
 
 const getInstitutionProfessors = async (req, res) => {
   try {
-    console.log("[Controller] Getting institution professors...");
     const decodedToken = req.user;
     const { institutionId } = decodedToken.body;
 
     const professors = await adminPanelUseCases.getInstitutionProfessors(institutionId);
-    console.log("professors: ", professors);
 
     return res.status(200).json({
       success: true,
@@ -166,12 +288,10 @@ const getInstitutionProfessors = async (req, res) => {
 
 const getInstitutionStudents = async (req, res) => {
   try {
-    console.log("[Controller] Getting institution students...");
     const decodedToken = req.user;
     const { institutionId } = decodedToken.body;
 
     const students = await adminPanelUseCases.getInstitutionStudents(institutionId);
-    console.log("students: ", students);
 
     return res.status(200).json({
       success: true,
@@ -192,10 +312,13 @@ const getInstitutionStudents = async (req, res) => {
 };
 
 const adminPanelControllers = {
+  getProfessor,
+  getStudent,
   getInbox,
   getProfessorRequest,
   approveProfessorRequest,
   declineProfessorRequest,
+  inviteProfessor,
   getInstitutionProfessors,
   getInstitutionStudents,
 } 

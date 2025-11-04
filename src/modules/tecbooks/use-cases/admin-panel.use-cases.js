@@ -3,6 +3,11 @@ import userService from "../services/user.service.js";
 import institutionService from "../services/institution.service.js";
 import { BadRequestError, NotFoundError } from "#src/utils/errors/AppError.js";
 
+const getUserById = async (userId) => {
+  const user = await userService.getUserById(userId);
+  return user;
+};
+
 const getInbox = async (institutionId) => {
   // Get all pending professor requests for this institution
   const requests = await professorRequestService.getProfessorRequestsByInstitution(institutionId);
@@ -101,12 +106,41 @@ const getInstitutionStudents = async (institutionId) => {
   return students;
 };
 
+const inviteProfessor = async (institutionId, email, firstNames, lastNames, department) => {
+  // Service 1: Check if user with this email already exists
+  const emailExists = await userService.checkEmailExists(email);
+  if (emailExists) {
+    throw new BadRequestError("A user with this email already exists");
+  }
+
+  // Service 2: Create the professor user with needsToConfigurePass = true
+  const newUser = await userService.createUser(
+    institutionId,
+    email,
+    firstNames,
+    lastNames,
+    'professor',
+    department,
+    false // isAdmin
+  );
+
+  // Service 3: Get institution name for email
+  const institution = await institutionService.getInstitutionById(institutionId);
+
+  return {
+    user: newUser,
+    institutionName: institution.name
+  };
+};
+
 const adminPanelUseCases = {
+  getUserById,
   getInbox,
   getProfessorRequest,
   getProfessorRequestById,
   approveProfessorRequest,
   declineProfessorRequest,
+  inviteProfessor,
   getInstitutionProfessors,
   getInstitutionStudents,
 };

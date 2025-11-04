@@ -5,14 +5,21 @@ import adminPanelControllers from "../controllers/admin-panel.controller.js";
 
 const router = express.Router();
 
-// Inbox and requests
-router.get("/get-inbox", verifyJWT, rbac.institutionAdmin, adminPanelControllers.getInbox);
-router.get("/get-professor-request", verifyJWT, rbac.institutionAdmin, adminPanelControllers.getProfessorRequest);
-router.post("/approve-professor", verifyJWT, rbac.institutionAdmin, adminPanelControllers.approveProfessorRequest);
-router.post("/decline-professor", verifyJWT, rbac.institutionAdmin, adminPanelControllers.declineProfessorRequest);
+router.use(verifyJWT, rbac.institutionAdmin);
 
-// Institution users
-router.get("/get-institution-professors", verifyJWT, rbac.institutionAdmin, adminPanelControllers.getInstitutionProfessors);
-router.get("/get-institution-students", verifyJWT, rbac.institutionAdmin, adminPanelControllers.getInstitutionStudents);
+// Manage Professors + Professor Page
+router.get("/get-institution-professors", adminPanelControllers.getInstitutionProfessors);
+router.get("/get-professor", adminPanelControllers.getProfessor)
+router.post("/invite-professor", adminPanelControllers.inviteProfessor)
+
+// Manage Students + Student Page
+router.get("/get-institution-students", adminPanelControllers.getInstitutionStudents);
+router.get("/get-student", adminPanelControllers.getStudent)
+
+// Inbox  + Professor Request Page
+router.get("/get-inbox", adminPanelControllers.getInbox);
+router.get("/get-professor-request", adminPanelControllers.getProfessorRequest);
+router.post("/approve-professor", adminPanelControllers.approveProfessorRequest);
+router.post("/decline-professor", adminPanelControllers.declineProfessorRequest);
 
 export default router

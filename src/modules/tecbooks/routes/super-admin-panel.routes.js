@@ -8,13 +8,17 @@ import superAdminControllers from "../controllers/super-admin-panel.controller.j
 
 const router = express.Router();
 
-// router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox)
-router.get("/get-all-institutions", verifyJWT, rbac.superAdmin, superAdminControllers.getAllInstitutions)
-router.get("/get-institution-by-id", verifyJWT, rbac.superAdmin, superAdminControllers.getInstitutionById)
-router.get("/get-inbox", verifyJWT, rbac.superAdmin, superAdminControllers.getInbox);
-router.get("/get-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.getInstitutionRequest)
-router.post("/approve-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.approveInstitutionRequest)
-router.post("/decline-institution-request", verifyJWT, rbac.superAdmin, superAdminControllers.declineInstitutionRequest)
+router.use(verifyJWT, rbac.superAdmin);
+
+// Manage Institution Page
+router.get("/get-all-institutions", superAdminControllers.getAllInstitutions)
+router.get("/get-institution-by-id", superAdminControllers.getInstitutionById)
+
+// Inbox Page
+router.get("/get-inbox", superAdminControllers.getInbox);
+router.get("/get-institution-request", superAdminControllers.getInstitutionRequest)
+router.post("/approve-institution-request", superAdminControllers.approveInstitutionRequest)
+router.post("/decline-institution-request", superAdminControllers.declineInstitutionRequest)
 
 
 export default router
