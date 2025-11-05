@@ -8,6 +8,92 @@ import userService from "../services/models/user.service.js";
 import ordersConfigService from "../services/models/orders-config.service.js";
 import premisesConfigService from "../services/models/premises-config.service.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "#src/utils/errors/AppError.js";
+import bomModel from "#src/shared/models/games/templates/bom.model.js";
+import processModel from "#src/shared/models/games/templates/process.model.js";
+import jobModel from "#src/shared/models/games/templates/job.model.js";
+import employeeModel from "#src/shared/models/games/templates/employee.model.js";
+
+// ===== HELPER FUNCTIONS =====
+
+/**
+ * Auto-resolves all dependencies based on selected BOMs
+ * Returns: { materialIds, processIds, assetIds, jobIds, skillIds, employeeIds }
+ */
+const resolveBOMDependencies = async (bomIds, institutionId, professorId) => {
+  // Step 1: Fetch selected BOMs with populated references
+  const boms = await bomModel.BOM.find({ _id: { $in: bomIds } })
+    .populate('requiredMaterials.material')
+    .populate('processes');
+  
+  if (boms.length === 0) {
+    throw new BadRequestError("No valid BOMs found");
+  }
+  
+  // Step 2: Extract material IDs from BOMs
+  const materialIds = [...new Set(
+    boms.flatMap(bom => 
+      bom.requiredMaterials.map(m => m.material._id.toString())
+    )
+  )];
+  
+  // Step 3: Extract process IDs from BOMs
+  const processIds = [...new Set(
+    boms.flatMap(bom => 
+      bom.processes.map(p => p._id.toString())
+    )
+  )];
+  
+  // Step 4: Fetch processes with populated references to get assets and jobs
+  const processes = await processModel.Process.find({ _id: { $in: processIds } })
+    .populate('requiredAssets')
+    .populate('requiredJobs.job');
+  
+  // Step 5: Extract asset IDs from processes
+  const assetIds = [...new Set(
+    processes.flatMap(process => 
+      process.requiredAssets.map(asset => asset._id.toString())
+    )
+  )];
+  
+  // Step 6: Extract job IDs from processes
+  const jobIds = [...new Set(
+    processes.flatMap(process => 
+      process.requiredJobs.map(rj => rj.job._id.toString())
+    )
+  )];
+  
+  // Step 7: Fetch jobs with populated skills to get skill IDs
+  const jobs = await jobModel.Job.find({ _id: { $in: jobIds } })
+    .populate('skillsNeeded');
+  
+  const skillIds = [...new Set(
+    jobs.flatMap(job => 
+      job.skillsNeeded.map(skill => skill._id.toString())
+    )
+  )];
+  
+  // Step 8: Get ALL employees (always available)
+  // Build scope query to get system + institution + professor employees
+  const scopeQuery = {
+    $or: [
+      { scope: "system" },
+      { institutionId, scope: "institution" },
+      { professorId, scope: "professor" }
+    ]
+  };
+  
+  const employees = await employeeModel.EmployeeTemplate.find(scopeQuery);
+  const employeeIds = employees.map(emp => emp._id.toString());
+  
+  return {
+    materialIds,
+    processIds,
+    assetIds,
+    jobIds,
+    skillIds,
+    employeeIds
+  };
+};
 
 // ===== STUDENT USE CASES =====
 const getInstitutionStudents = async (institutionId) => {
@@ -141,6 +227,23 @@ const deleteGroup = async (groupId, professorId) => {
 
 // ===== GAME USE CASES =====
 
+/**
+ * Creates a new game with auto-resolved dependencies
+ * 
+ * Professor provides:
+ * - selectedBOMIds: BOMs (products) students can manufacture
+ * - selectedExpenseIds: Fixed expenses (optional)
+ * - ordersConfig: Order distribution settings (optional, uses defaults)
+ * - premisesConfig: Premises settings (optional, uses defaults)
+ * 
+ * System automatically includes:
+ * - All materials required by selected BOMs
+ * - All processes required by selected BOMs
+ * - All assets required by those processes
+ * - All jobs required by those processes
+ * - All skills required by those jobs
+ * - All employees (always available for hiring)
+ */
 const createGame = async (institutionId, professorId, gameData) => {
   // Verify group ownership
   const group = await groupService.getGroupById(gameData.groupId);
@@ -148,12 +251,24 @@ const createGame = async (institutionId, professorId, gameData) => {
     throw new ForbiddenError("You don't have permission to create games for this group");
   }
   
-  // Step 1: Create OrdersConfig
+  // Validate that at least one BOM is selected
+  if (!gameData.selectedBOMIds || gameData.selectedBOMIds.length === 0) {
+    throw new BadRequestError("At least one BOM must be selected");
+  }
+  
+  // Step 1: Auto-resolve all dependencies based on selected BOMs
+  const dependencies = await resolveBOMDependencies(
+    gameData.selectedBOMIds,
+    institutionId,
+    professorId
+  );
+  
+  // Step 2: Create OrdersConfig
   const ordersConfig = await ordersConfigService.createOrdersConfig(
     gameData.ordersConfig || ordersConfigService.getDefaultOrdersConfig()
   );
   
-  // Step 2: Create or use PremisesConfig
+  // Step 3: Create or use PremisesConfig
   let premisesConfigId;
   if (gameData.premisesConfigId) {
     // Use existing premises config
@@ -169,7 +284,7 @@ const createGame = async (institutionId, professorId, gameData) => {
     premisesConfigId = premisesConfig._id;
   }
   
-  // Step 3: Create GameConfiguration
+  // Step 4: Create GameConfiguration with auto-resolved dependencies
   const gameConfiguration = await gameConfigurationService.createGameConfiguration({
     name: gameData.configurationName || `${gameData.name} Configuration`,
     description: gameData.configurationDescription || `Configuration for ${gameData.name}`,
@@ -177,15 +292,17 @@ const createGame = async (institutionId, professorId, gameData) => {
     gameDurationMonths: gameData.gameDurationMonths || 12,
     premisesConfigId: premisesConfigId,
     ordersConfigId: ordersConfig._id,
-    availableAssetIds: gameData.selectedAssetIds || [],
-    availableEmployeeIds: gameData.selectedEmployeeIds || [],
-    availableBOMIds: gameData.selectedBOMIds || [],
+    // Professor-selected
+    availableBOMIds: gameData.selectedBOMIds,
     availableExpenseIds: gameData.selectedExpenseIds || [],
-    availableMaterialIds: gameData.selectedMaterialIds || [],
-    availableProcessIds: gameData.selectedProcessIds || [],
+    // Auto-resolved from BOMs
+    availableMaterialIds: dependencies.materialIds,
+    availableProcessIds: dependencies.processIds,
+    availableAssetIds: dependencies.assetIds,
+    availableEmployeeIds: dependencies.employeeIds, // All employees
   });
   
-  // Step 4: Create Game
+  // Step 5: Create Game
   const newGame = await gameService.createGame(
     institutionId,
     professorId,
@@ -501,9 +618,25 @@ const getGameConfiguration = async (configId) => {
   return config;
 };
 
-const getDefaultConfigs = async () => {
+/**
+ * Gets default configurations and available templates for game creation
+ * 
+ * Returns:
+ * - ordersConfig: Default order distribution settings
+ * - premisesConfig: Default premises settings
+ * - gameSettings: Default game settings (capital, duration)
+ * - availableBOMs: BOMs professor can select from (system + institution + professor scoped)
+ * - availableExpenses: Expenses professor can select from (system + institution + professor scoped)
+ */
+const getDefaultConfigs = async (institutionId, professorId) => {
   const ordersConfig = ordersConfigService.getDefaultOrdersConfig();
   const premisesConfig = premisesConfigService.getDefaultPremisesConfig();
+  
+  // Get available BOMs for selection (system + institution + professor)
+  const availableBOMs = await templateService.getBOMs(institutionId, professorId);
+  
+  // Get available Expenses for selection (system + institution + professor)
+  const availableExpenses = await templateService.getExpenseTemplates(institutionId, professorId);
   
   return {
     ordersConfig,
@@ -511,7 +644,9 @@ const getDefaultConfigs = async () => {
     gameSettings: {
       initialCapital: 1000000,
       gameDurationMonths: 12,
-    }
+    },
+    availableBOMs,
+    availableExpenses,
   };
 };
 

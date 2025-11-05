@@ -11,9 +11,6 @@ import cookieParser from "cookie-parser"
 import robloxRoutes from "./src/modules/roblox/routes/index.routes.js"
 import tecbooksRoutes from "./src/modules/tecbooks/routes/index.routes.js"
 import { connectDB } from "./src/utils/db/db.js"
-// import { seedSuperAdmin } from "./src/utils/seeds/superadmin.seed.js"
-import { seedSuperAdmin } from '#src/utils/seeds/superadmin.seed.js'
-
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

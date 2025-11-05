@@ -69,8 +69,29 @@ router.post("/templates/job", professorPanelControllers.createJob);
 router.post("/templates/skill", professorPanelControllers.createSkill);
 
 // ===== GAME CONFIGURATION ROUTES =====
+// Legacy: Get pre-made game configurations (not commonly used with new dynamic flow)
 router.get("/game-configurations", professorPanelControllers.getAllGameConfigurations);
 router.get("/game-configuration", professorPanelControllers.getGameConfiguration);
+
+/**
+ * GET /default-configs
+ * 
+ * Returns default configurations and available templates for game creation.
+ * Used by "Create Game" page to show:
+ * - Default order distribution settings (can be customized)
+ * - Default premises settings (can be customized)
+ * - Default game settings (initial capital, duration)
+ * - Available BOMs for selection (professor chooses products)
+ * - Available Expenses for selection (professor chooses fixed costs)
+ * 
+ * System automatically resolves:
+ * - Materials (based on selected BOMs)
+ * - Processes (based on selected BOMs)
+ * - Assets (based on required processes)
+ * - Jobs (based on required processes)
+ * - Skills (based on required jobs)
+ * - Employees (all available for hiring)
+ */
 router.get("/default-configs", professorPanelControllers.getDefaultConfigs);
 
 // ===== INBOX ROUTE =====

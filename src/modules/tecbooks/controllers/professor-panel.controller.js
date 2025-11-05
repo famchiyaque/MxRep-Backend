@@ -425,9 +425,40 @@ const deleteGroup = async (req, res) => {
 
 // ===== GAME CONTROLLERS =====
 
+/**
+ * POST /create-game
+ * 
+ * Creates a new game with auto-resolved dependencies.
+ * 
+ * Required in req.body:
+ * - groupId: ID of the group this game is for
+ * - name: Name of the game
+ * - selectedBOMIds: Array of BOM IDs (products students can manufacture) - REQUIRED
+ * 
+ * Optional in req.body:
+ * - description: Game description
+ * - selectedExpenseIds: Array of expense template IDs (fixed costs)
+ * - ordersConfig: Custom order distribution settings (uses defaults if not provided)
+ * - premisesConfig: Custom premises settings (uses defaults if not provided)
+ * - premisesConfigId: ID of existing premises config to use
+ * - initialCapital: Starting capital (default: 1000000)
+ * - gameDurationMonths: Game duration (default: 12)
+ * - configurationName: Name for the game configuration
+ * - configurationDescription: Description for the game configuration
+ * 
+ * System automatically includes (based on selected BOMs):
+ * - All required materials
+ * - All required processes
+ * - All required assets
+ * - All required jobs
+ * - All required skills
+ * - All employees (always available)
+ */
 const createGame = async (req, res) => {
   try {
+    console.log("Creating game...")
     const gameData = req.body;
+    console.log("Game data: ", gameData)
     const decodedToken = req.user;
     const { institutionId, userId: professorId } = decodedToken.body;
 
@@ -436,6 +467,13 @@ const createGame = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: "Group ID and game name are required"
+      });
+    }
+    
+    if (!gameData.selectedBOMIds || gameData.selectedBOMIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "At least one BOM must be selected"
       });
     }
 
@@ -1212,7 +1250,10 @@ const getGameConfiguration = async (req, res) => {
 
 const getDefaultConfigs = async (req, res) => {
   try {
-    const defaultConfigs = await professorPanelUseCases.getDefaultConfigs();
+    const decodedToken = req.user;
+    const { institutionId, userId: professorId } = decodedToken.body;
+
+    const defaultConfigs = await professorPanelUseCases.getDefaultConfigs(institutionId, professorId);
 
     return res.status(200).json({
       success: true,
