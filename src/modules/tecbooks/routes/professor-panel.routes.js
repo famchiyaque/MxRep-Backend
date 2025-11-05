@@ -43,6 +43,7 @@ router.post("/create-class", professorPanelControllers.createClass);
 router.post("/update-class", professorPanelControllers.updateClass);
 router.post("/delete-class", professorPanelControllers.deleteClass);
 
+
 // ===== TEAM ROUTES =====
 router.get("/get-teams-by-game", professorPanelControllers.getTeamsByGame);
 router.get("/get-team", professorPanelControllers.getTeam);
@@ -51,6 +52,7 @@ router.post("/update-team", professorPanelControllers.updateTeam);
 router.post("/team/add-student", professorPanelControllers.addStudentToTeam);
 router.post("/team/remove-student", professorPanelControllers.removeStudentFromTeam);
 router.post("/team", professorPanelControllers.deleteTeam);
+
 
 // ===== TEMPLATE ROUTES =====
 // For extended game page, shows all available templates
@@ -69,6 +71,7 @@ router.post("/templates/skill", professorPanelControllers.createSkill);
 // ===== GAME CONFIGURATION ROUTES =====
 router.get("/game-configurations", professorPanelControllers.getAllGameConfigurations);
 router.get("/game-configuration", professorPanelControllers.getGameConfiguration);
+router.get("/default-configs", professorPanelControllers.getDefaultConfigs);
 
 // ===== INBOX ROUTE =====
 router.get("/inbox", professorPanelControllers.getInbox);

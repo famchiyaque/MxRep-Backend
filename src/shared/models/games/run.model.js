@@ -5,7 +5,8 @@ const RunSchema = new mongoose.Schema({
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true },
     gameId: { type: mongoose.Schema.Types.ObjectId, ref: "Game", required: true },
     configurationId: { type: mongoose.Schema.Types.ObjectId, ref: "GameConfiguration", required: true },
-    
+    code: { type: String, required: true },
+
     // Financial State
     currentCapital: { type: Number, required: true },
     totalRevenue: { type: Number, default: 0 },

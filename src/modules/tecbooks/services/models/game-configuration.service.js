@@ -1,6 +1,7 @@
 import gameConfigurationModel from "#src/shared/models/games/game-configuration.model.js";
 import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js";
 
+
 const createGameConfiguration = async (configData) => {
   try {
     const newConfig = await gameConfigurationModel.GameConfiguration.create(configData);

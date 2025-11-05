@@ -427,24 +427,22 @@ const deleteGroup = async (req, res) => {
 
 const createGame = async (req, res) => {
   try {
-    const { groupId, configurationId, name, description } = req.body;
+    const gameData = req.body;
     const decodedToken = req.user;
     const { institutionId, userId: professorId } = decodedToken.body;
 
-    if (!groupId || !configurationId || !name) {
+    // Validate required fields
+    if (!gameData.groupId || !gameData.name) {
       return res.status(400).json({
         success: false,
-        error: "Group ID, configuration ID, and game name are required"
+        error: "Group ID and game name are required"
       });
     }
 
     const newGame = await professorPanelUseCases.createGame(
       institutionId,
       professorId,
-      groupId,
-      configurationId,
-      name,
-      description
+      gameData
     );
 
     return res.status(201).json({
@@ -1212,6 +1210,27 @@ const getGameConfiguration = async (req, res) => {
   }
 };
 
+const getDefaultConfigs = async (req, res) => {
+  try {
+    const defaultConfigs = await professorPanelUseCases.getDefaultConfigs();
+
+    return res.status(200).json({
+      success: true,
+      data: defaultConfigs
+    });
+  } catch (error) {
+    console.error("[Controller] Error getting default configs:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
 // ===== INBOX CONTROLLER =====
 
 const getInbox = async (req, res) => {
@@ -1287,6 +1306,7 @@ const professorPanelControllers = {
   // Game Configurations
   getAllGameConfigurations,
   getGameConfiguration,
+  getDefaultConfigs,
   
   // Inbox
   getInbox,

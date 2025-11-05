@@ -5,6 +5,8 @@ import teamService from "../services/models/team.service.js";
 import gameConfigurationService from "../services/models/game-configuration.service.js";
 import templateService from "../services/models/template.service.js";
 import userService from "../services/models/user.service.js";
+import ordersConfigService from "../services/models/orders-config.service.js";
+import premisesConfigService from "../services/models/premises-config.service.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "#src/utils/errors/AppError.js";
 
 // ===== STUDENT USE CASES =====
@@ -139,23 +141,58 @@ const deleteGroup = async (groupId, professorId) => {
 
 // ===== GAME USE CASES =====
 
-const createGame = async (institutionId, professorId, groupId, configurationId, name, description) => {
+const createGame = async (institutionId, professorId, gameData) => {
   // Verify group ownership
-  const group = await groupService.getGroupById(groupId);
+  const group = await groupService.getGroupById(gameData.groupId);
   if (group.professorId._id.toString() !== professorId.toString()) {
     throw new ForbiddenError("You don't have permission to create games for this group");
   }
   
-  // Verify configuration exists
-  await gameConfigurationService.getGameConfigurationById(configurationId);
+  // Step 1: Create OrdersConfig
+  const ordersConfig = await ordersConfigService.createOrdersConfig(
+    gameData.ordersConfig || ordersConfigService.getDefaultOrdersConfig()
+  );
   
+  // Step 2: Create or use PremisesConfig
+  let premisesConfigId;
+  if (gameData.premisesConfigId) {
+    // Use existing premises config
+    premisesConfigId = gameData.premisesConfigId;
+  } else if (gameData.premisesConfig) {
+    // Create new premises config
+    const premisesConfig = await premisesConfigService.createPremisesConfig(gameData.premisesConfig);
+    premisesConfigId = premisesConfig._id;
+  } else {
+    // Create default premises config
+    const defaultPremises = premisesConfigService.getDefaultPremisesConfig();
+    const premisesConfig = await premisesConfigService.createPremisesConfig(defaultPremises);
+    premisesConfigId = premisesConfig._id;
+  }
+  
+  // Step 3: Create GameConfiguration
+  const gameConfiguration = await gameConfigurationService.createGameConfiguration({
+    name: gameData.configurationName || `${gameData.name} Configuration`,
+    description: gameData.configurationDescription || `Configuration for ${gameData.name}`,
+    initialCapital: gameData.initialCapital || 1000000,
+    gameDurationMonths: gameData.gameDurationMonths || 12,
+    premisesConfigId: premisesConfigId,
+    ordersConfigId: ordersConfig._id,
+    availableAssetIds: gameData.selectedAssetIds || [],
+    availableEmployeeIds: gameData.selectedEmployeeIds || [],
+    availableBOMIds: gameData.selectedBOMIds || [],
+    availableExpenseIds: gameData.selectedExpenseIds || [],
+    availableMaterialIds: gameData.selectedMaterialIds || [],
+    availableProcessIds: gameData.selectedProcessIds || [],
+  });
+  
+  // Step 4: Create Game
   const newGame = await gameService.createGame(
     institutionId,
     professorId,
-    groupId,
-    configurationId,
-    name,
-    description
+    gameData.groupId,
+    gameConfiguration._id,
+    gameData.name,
+    gameData.description
   );
   
   return newGame;
@@ -464,6 +501,20 @@ const getGameConfiguration = async (configId) => {
   return config;
 };
 
+const getDefaultConfigs = async () => {
+  const ordersConfig = ordersConfigService.getDefaultOrdersConfig();
+  const premisesConfig = premisesConfigService.getDefaultPremisesConfig();
+  
+  return {
+    ordersConfig,
+    premisesConfig,
+    gameSettings: {
+      initialCapital: 1000000,
+      gameDurationMonths: 12,
+    }
+  };
+};
+
 const professorPanelUseCases = {
   // Students
   getInstitutionStudents,
@@ -516,6 +567,7 @@ const professorPanelUseCases = {
   // Game Configurations
   getAllGameConfigurations,
   getGameConfiguration,
+  getDefaultConfigs,
 };
 
 export default professorPanelUseCases;
