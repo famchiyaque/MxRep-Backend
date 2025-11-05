@@ -1,5 +1,31 @@
 import professorPanelUseCases from "../use-cases/professor-panel.use-cases.js";
 
+// ===== STUDENT CONTROLLERS =====
+const getInstitutionStudents = async (req, res) => {
+  try {
+    const decodedToken = req.user;
+    const { institutionId } = decodedToken.body;
+
+    const students = await professorPanelUseCases.getInstitutionStudents(institutionId);
+
+    return res.status(200).json({
+      success: true,
+      data: students,
+      count: students.length
+    });
+  } catch (error) {
+    console.error("[Controller] Error getting institution students:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
 // ===== CLASS CONTROLLERS =====
 
 const createClass = async (req, res) => {
@@ -235,7 +261,6 @@ const getMyGroups = async (req, res) => {
 
 const getGroup = async (req, res) => {
   try {
-    console.log("Getting group...")
     const { groupId } = req.query;
     const decodedToken = req.user;
     const { userId: professorId } = decodedToken.body;
@@ -1211,6 +1236,8 @@ const getInbox = async (req, res) => {
 };
 
 const professorPanelControllers = {
+  // Students
+  getInstitutionStudents,
   // Classes
   createClass,
   getMyClasses,

@@ -7,6 +7,12 @@ import templateService from "../services/models/template.service.js";
 import userService from "../services/models/user.service.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "#src/utils/errors/AppError.js";
 
+// ===== STUDENT USE CASES =====
+const getInstitutionStudents = async (institutionId) => {
+  const students = await userService.getUsersByInstitutionAndRole(institutionId, 'student');
+  return students;
+};
+
 // ===== CLASS USE CASES =====
 
 const createClass = async (institutionId, professorId, name, description, code) => {
@@ -459,6 +465,8 @@ const getGameConfiguration = async (configId) => {
 };
 
 const professorPanelUseCases = {
+  // Students
+  getInstitutionStudents,
   // Classes
   createClass,
   getMyClasses,

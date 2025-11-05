@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const GroupSchema = new mongoose.Schema({
     classId: { type: mongoose.Schema.Types.ObjectId, ref: "Class", required: true },
-    professorId: { type: mongoose.Schema.Types.ObjectId, ref: "Professor", required: true },
+    professorId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
     description: { type: String },
     code: { type: String, required: true },
