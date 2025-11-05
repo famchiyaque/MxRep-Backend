@@ -3,10 +3,15 @@ import userModel from "#src/shared/models/actors/user.model.js"
 
 const findUser = async (email) => {
   try {
-    const user = await userModel.User.findOne({ email })
-    if (!user) throw new Error("No user found with given email")
+    const user = await userModel.User
+      .findOne({ email })
+      .lean(); // returns a plain JS object instead of a Mongoose doc
 
-    return user
+    if (!user) throw new Error("No user found with given email");
+
+    // Rename _id -> userId
+    const { _id, ...rest } = user;
+    return { userId: _id, ...rest };
   } catch (err) {
     throw new Error(`Error querying db for user , ${err.message}`)
   }

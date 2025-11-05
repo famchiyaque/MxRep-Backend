@@ -8,6 +8,7 @@ const login = async (email, password) => {
 
     // Service 2: validate password
     await authService.validatePasswordHash(user, password)
+    delete user.passwordHash;
 
     // Service 3: query institution by id
     const institutionId = user.institutionId

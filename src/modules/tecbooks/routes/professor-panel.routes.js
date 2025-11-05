@@ -7,79 +7,69 @@ const router = express.Router();
 
 router.use(verifyJWT, rbac.professor);
 
-// My Games + Create Game Page
+// ===== GAME ROUTES =====
+// Manage Games Page
 router.get("/get-my-games", professorPanelControllers.getMyGames);
+
+// Extended Game Page
 router.get("/get-game", professorPanelControllers.getGame);
-
-// Game Page
-// get all students of the group to which the game belongs to
-// get all teams
-// create team
-// add student to team and/or edit team (add various students, remove students, edit team name)
-// activate game
-// deactivate game
-// end game
-
-// Create game page
 router.post("/create-game", professorPanelControllers.createGame);
-// get default game configurations
-// this includes get the boms, employees, assets, expenses,
-// so the professor can choose which to include in the game
+router.post("/update-game", professorPanelControllers.updateGame);
+router.post("/activate-game", professorPanelControllers.activateGame);
+router.post("/pause-game", professorPanelControllers.pauseGame);
+router.post("/complete-game", professorPanelControllers.completeGame);
+router.post("/delete-game", professorPanelControllers.deleteGame);
 
+// ===== GROUP ROUTES =====
 // Manage Groups Page
 router.get("/get-my-groups", professorPanelControllers.getMyGroups);
+
+// Extended Group Page
 router.get("/get-group", professorPanelControllers.getGroup);
 router.post("/create-group", professorPanelControllers.createGroup);
-// get all students in the institution so the professor can choose which students to add to the group
-// add student to group
-// activate grouop
-// deactivate group
+router.post("/update-group", professorPanelControllers.updateGroup);
+router.post("/group/add-student", professorPanelControllers.addStudentToGroup);
+router.post("/group/remove-student", professorPanelControllers.removeStudentFromGroup);
+router.post("/delete-group", professorPanelControllers.deleteGroup);
 
+// ===== CLASS ROUTES =====
 // Manage Classes Page
 router.get("/get-my-classes", professorPanelControllers.getMyClasses);
+
+// Extended Class Page
 router.get("/get-class", professorPanelControllers.getClass);
 router.post("/create-class", professorPanelControllers.createClass);
+router.post("/update-class", professorPanelControllers.updateClass);
+router.post("/delete-class", professorPanelControllers.deleteClass);
 
-// Inbox Page
-router.get("/get-inbox", professorPanelControllers.getInbox);
+// ===== TEAM ROUTES =====
+router.get("/get-teams-by-game", professorPanelControllers.getTeamsByGame);
+router.get("/get-team", professorPanelControllers.getTeam);
+router.post("/create-team", professorPanelControllers.createTeam);
+router.post("/update-team", professorPanelControllers.updateTeam);
+router.post("/team/add-student", professorPanelControllers.addStudentToTeam);
+router.post("/team/remove-student", professorPanelControllers.removeStudentFromTeam);
+router.post("/team", professorPanelControllers.deleteTeam);
 
-// Profile Page
-// Todo: add edit-profile route
+// ===== TEMPLATE ROUTES =====
+// For extended game page, shows all available templates
+router.get("/templates", professorPanelControllers.getAvailableTemplates);
 
-export default router
+// Will make a Templates Page later to edit, create and delete templates
+router.post("/templates/bom", professorPanelControllers.createBOM);
+router.post("/templates/employee", professorPanelControllers.createEmployeeTemplate);
+router.post("/templates/asset", professorPanelControllers.createAssetTemplate);
+router.post("/templates/material", professorPanelControllers.createMaterial);
+router.post("/templates/process", professorPanelControllers.createProcess);
+router.post("/templates/expense", professorPanelControllers.createExpenseTemplate);
+router.post("/templates/job", professorPanelControllers.createJob);
+router.post("/templates/skill", professorPanelControllers.createSkill);
 
-// API Endpoints Summary
+// ===== GAME CONFIGURATION ROUTES =====
+router.get("/game-configurations", professorPanelControllers.getAllGameConfigurations);
+router.get("/game-configuration", professorPanelControllers.getGameConfiguration);
 
-```
-# Game Management
-POST   /api/games                    # Create game
-GET    /api/games/:id                # Get game details
-PUT    /api/games/:id                # Update game
-DELETE /api/games/:id                # Delete game
-POST   /api/games/:id/activate       # Activate game
-POST   /api/games/:id/complete       # End game
+// ===== INBOX ROUTE =====
+router.get("/inbox", professorPanelControllers.getInbox);
 
-# Team Management
-POST   /api/games/:gameId/teams      # Create team
-GET    /api/games/:gameId/teams      # List teams
-PUT    /api/teams/:id                # Update team
-DELETE /api/teams/:id                # Delete team
-
-# Gameplay
-POST   /api/games/join               # Student joins game
-GET    /api/runs/:id                 # Get run state
-POST   /api/runs/:id/purchase-material
-POST   /api/runs/:id/hire-employee
-POST   /api/runs/:id/buy-asset
-POST   /api/runs/:id/create-line
-POST   /api/runs/:id/start-production
-GET    /api/runs/:id/transactions    # Financial history
-GET    /api/runs/:id/report          # Performance report
-
-# Templates (Professor)
-GET    /api/templates/boms           # Available BOMs
-GET    /api/templates/employees      # Available employees
-GET    /api/templates/assets         # Available assets
-POST   /api/templates/boms           # Create custom BOM
-# ... etc
-```
+export default router;

@@ -5,6 +5,7 @@ const GroupSchema = new mongoose.Schema({
     professorId: { type: mongoose.Schema.Types.ObjectId, ref: "Professor", required: true },
     name: { type: String, required: true },
     description: { type: String },
+    code: { type: String, required: true },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     createdAt: { type: Date, default: Date.now },

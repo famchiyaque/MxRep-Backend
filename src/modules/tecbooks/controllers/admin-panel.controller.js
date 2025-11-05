@@ -82,12 +82,12 @@ const inviteProfessor = async (req, res) => {
 
 const getProfessor = async (req, res) => {
   try {
-    console.log("Getting professor...");
+    // console.log("Getting professor...");
     const decodedToken = req.user;
     const { professorId } = req.query;
 
     const professor = await adminPanelUseCases.getUserById(professorId);
-    console.log("professor: ", professor);
+    // console.log("professor: ", professor);
     return res.status(200).json({
       success: true,
       data: professor
