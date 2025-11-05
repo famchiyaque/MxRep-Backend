@@ -1,4 +1,4 @@
-import professorRequestModel from "#src/shared/models/professorRequest.model.js"
+import professorRequestModel from "#src/shared/models/requests/professorRequest.model.js"
 import { DatabaseError, ConflictError, NotFoundError } from "#src/utils/errors/AppError.js"
 
 const createProfessorRequest = async (

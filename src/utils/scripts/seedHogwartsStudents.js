@@ -21,8 +21,8 @@ const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, '../../../.env') });
 
 // Import models
-import userModel from '../../shared/models/user.model.js';
-import institutionModel from '../../shared/models/institution.model.js';
+import userModel from '../../shared/models/actors/user.model.js';
+import institutionModel from '../../shared/models/actors/institution.model.js';
 
 const students = [
   {

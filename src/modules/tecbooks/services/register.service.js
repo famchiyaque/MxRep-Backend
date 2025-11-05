@@ -1,6 +1,6 @@
-import institutionModel from "#src/shared/models/institution.model.js"
-import professorRequestModel from "#src/shared/models/professorRequest.model.js"
-import userModel from "#src/shared/models/user.model.js"
+import institutionModel from "#src/shared/models/actors/institution.model.js"
+import professorRequestModel from "#src/shared/models/requests/professorRequest.model.js"
+import userModel from "#src/shared/models/actors/user.model.js"
 
 const getAllInstitutions = async () => {
   try {

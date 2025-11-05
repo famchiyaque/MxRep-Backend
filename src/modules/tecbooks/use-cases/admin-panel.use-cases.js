@@ -1,6 +1,6 @@
-import professorRequestService from "../services/professorRequest.service.js";
-import userService from "../services/user.service.js";
-import institutionService from "../services/institution.service.js";
+import professorRequestService from "../services/models/professorRequest.service.js";
+import userService from "../services/models/user.service.js";
+import institutionService from "../services/emails/institution.service.js";
 import { BadRequestError, NotFoundError } from "#src/utils/errors/AppError.js";
 
 const getUserById = async (userId) => {

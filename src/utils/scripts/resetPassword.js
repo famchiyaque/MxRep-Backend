@@ -6,7 +6,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
-import userModel from '../../shared/models/user.model.js';
+import userModel from '../../shared/models/actors/user.model.js';
 import { connectDB } from '../db/db.js';
 
 const resetPassword = async (email, newPassword) => {

@@ -1,5 +1,5 @@
-import professorModel from "#src/shared/models/professorRequest.model.js"
-import userModel from "#src/shared/models/user.model.js";
+import professorModel from "#src/shared/models/requests/professorRequest.model.js"
+import userModel from "#src/shared/models/actors/user.model.js";
 import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js"
 import bcrypt from "bcrypt"
 

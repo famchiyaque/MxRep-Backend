@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import institutionModel from "#src/shared/models/institution.model.js"
+import institutionModel from "#src/shared/models/actors/institution.model.js"
 import dotenv from "dotenv";
 import { makeUri } from "../db/db.js";
 

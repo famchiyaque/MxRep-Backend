@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import userModel from "#src/shared/models/user.model.js";
+import userModel from "#src/shared/models/actors/user.model.js";
 
 export const seedSuperAdmin = async () => {
   try {

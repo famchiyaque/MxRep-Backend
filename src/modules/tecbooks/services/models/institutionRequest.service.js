@@ -1,4 +1,4 @@
-import institutionRequestModel from "#src/shared/models/institutionRequest.model.js"
+import institutionRequestModel from "#src/shared/models/requests/institutionRequest.model.js"
 import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js"
 
 const checkIfExistsByName = async  (institutionName) => {

@@ -1,5 +1,5 @@
-import userModel from "#src/shared/models/user.model.js"
-import institutionModel from "#src/shared/models/institution.model.js"
+import userModel from "#src/shared/models/actors/user.model.js"
+import institutionModel from "#src/shared/models/actors/institution.model.js"
 import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js"
 
 const getInstitutionById = async (institutionId) => {

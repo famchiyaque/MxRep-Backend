@@ -1,7 +1,7 @@
 // import registerServices from "../services/register.service.js"
-import professorRequestService from "../services/professorRequest.service.js"
-import institutionRequestService from "../services/institutionRequest.service.js"
-import institutionService from "../services/institution.service.js"
+import professorRequestService from "../services/models/professorRequest.service.js"
+import institutionRequestService from "../services/models/institutionRequest.service.js"
+import institutionService from "../services/emails/institution.service.js"
 
 const getAllInstitutions = async (decodedToken) => {
   // Service 1: Check if userId is really super admin

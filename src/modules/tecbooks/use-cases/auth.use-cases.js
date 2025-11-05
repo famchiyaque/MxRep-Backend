@@ -1,5 +1,5 @@
 import authService from "../services/auth.service.js"
-import institutionService from "../services/institution.service.js"
+import institutionService from "../services/emails/institution.service.js"
 
 const login = async (email, password) => {
   try {
