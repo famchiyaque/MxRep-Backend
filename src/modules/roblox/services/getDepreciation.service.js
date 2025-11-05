@@ -1,4 +1,4 @@
-const getDepreciation1 = async (componentsProductionLine) => {
+const getDepreciation = async (componentsProductionLine) => {
     let totalDepreciation = 0;
 
     let machinaryDepreciation = 0;
@@ -11,20 +11,37 @@ const getDepreciation1 = async (componentsProductionLine) => {
 
     let num = 0;
 
-    for (component in componentsProductionLine){
-        console.log(num);
-        if (componentsProductionLine.components == "porcentajeDepreciacionEdificios"){
-            buildingDepreciation += componentsProductionLine.value;
-            console.log("Si");
+    for (const component of componentsProductionLine) {
+        
+        totalDepreciation += component.value;
+
+        if (component.type === "machinery") {
+            machinaryDepreciation += component.value; 
+
+        } else if (component.type === "building") {
+            buildingDepreciation += component.value; 
+
+        } else if (component.type === "transport") {
+            transportDepreciation += component.value;
+
+        } else if (component.type === "computer") {
+            computerDepreciation += component.value;
         }
-        num = num + 1 ;
     }
 
-    console.log("Building: " ,buildingDepreciation);
+    const depreciationData = {
+        totalDepreciation,
+        machinaryDepreciation,
+        buildingDepreciation,
+        transportDepreciation,
+        computerDepreciation,
+    };
+
+    return depreciationData;
 };
 
 const getDepreciationService = {
-    getDepreciation1
+   getDepreciation,
 }
 
 export default getDepreciationService

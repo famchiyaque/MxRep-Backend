@@ -1,54 +1,64 @@
 import mongoose from 'mongoose'
 
-const PremisaSchema = new mongoose.Schema({
-  year: {
-    type: Number,
-    required: true,
-  },
-  economicas: {
-    tipoCambioCierre: { type: Number, default: 16.66 },
-    tasaLiderNacional: { type: Number, default: 0.16 },
-    cpp: { type: Number, default: 0.28 },
-    cetes: { type: Number, default: 0.332 },
-    libor: { type: Number, default: 0.077 },
-  },
-  fiscales: {
-    inflacionNacional: { type: Number, default: 0.043 },
-    tasaISR: { type: Number, default: 0.34 },
-    tasaIMPAC: { type: Number, default: 1.8 },
-    tasaPTU: { type: Number, default: 0.1 },
-    inflacionExtranjera: { type: Number, default: null },
-  },
-  politicas: {
-    porcentajeInventario: { type: Number, default: 0.2 },
-    porcentajeProveedores: { type: Number, default: 0.2 },
-    porcentajePasivoCortoPlazo: { type: Number, default: 0.03 },
-    porcentajeCostoDirectoProducto: { type: Number, default: 0.15 },
-    porcentajeCostoIndirectoProducto: { type: Number, default: 0.05 },
-    porcentajeGastoVenta: { type: Number, default: 0.002 },
-    porcentajeAdministracion: { type: Number, default: 0.005 },
-    porcentajeDepreciacionEdificios: { type: Number, default: 0.05 },
-    porcentajeDepreciacionMaquinariaEquipo: { type: Number, default: 0.1 },
-    porcentajeDepreciacionEquipoTransporte: { type: Number, default: 0.2 },
-    porcentajeDepreciacionEquipoComputo: { type: Number, default: 0.085 },
-  },
+const componentproductionLineSchema = new mongoose.Schema({
+  productionLineId: { type: String, required: true },
+  name: { type: String, required: true },
+  value: { type: Number, required: true },
+  type: { type: String, required: true },
+  year: { type: Date, required: true },
+}, {
+  collection: 'ComponentProductionLine'
 });
 
+const workersSchema = new mongoose.Schema({
+  workerId : { type: String, required: true },
+  role : { type: String, required: true },
+  salary : { type: Number, required: true },
+  roleArea : { type: String, required: true },
+}, {
+  collection: 'Worker'
+});
 
-const Premisa = mongoose.model("Premisa", PremisaSchema);
+const productionLineTemplateSchema = new mongoose.Schema({
+  _id : mongoose.Schema.Types.ObjectId,
+  productionLineId : { type: String, required: true },
+  bomId : mongoose.Schema.Types.ObjectId, 
+  components : [
+    {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "ComponentProductionLine",
+    },
+  ],
+  workers:  [
+    {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "Worker",
+    },
+  ],
+}, {
+  collection: 'ProductionLineTemplate' 
+});
+
+const productionLineTemplate = mongoose.model("ProductionLineTemplate", productionLineTemplateSchema);
+
+const componentProductionLine = mongoose.model("ComponentProductionLine", componentproductionLineSchema);
+
+const workerModel = mongoose.model("Worker", workersSchema);
+
+
 
 const findByIdProductionLineTemplate = async (productionLineIdTemplate) => {
-  console.log(`Model: Buscando plantilla con id ${productionLineIdTemplate}`);
+
+  const production = await productionLineTemplate.findOne({ productionLineId: productionLineIdTemplate }).populate('components').populate('workers');
   
-  return await Premisa.findOne({ year: Number(productionLineIdTemplate) });
-  
-  
+  return production;
 };
 
-
-const productionLineIdTemplateModel = {
+const productionLineTemplateModel = {
   findByIdProductionLineTemplate,
-  Premisa
+  componentProductionLine,
+  workerModel,
+  productionLineTemplate,
 };
 
-export default productionLineIdTemplateModel
+export default productionLineTemplateModel
