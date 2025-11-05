@@ -95,15 +95,16 @@ const generateData = async (request, response) => {
           processesInProductionLine: {
             bom: {
               bomId: "BOM001"
-            }
-          }
+            },
+            productionLineId:'PLT-BUGGY'
         }
-  };
+  }
+};
 
   await getCapacityUseCase.getCapacity(robloxData);
   await generateExpensesUseCase.generateExpenses(robloxData);
   await getBomUseCase.getBom(robloxData);
-  // await getDepreciationUseCase.getDepreciation(robloxData);
+  await getDepreciationUseCase.getDepreciation(robloxData);
   response.json({ success: true, data: robloxData });
 };
 
