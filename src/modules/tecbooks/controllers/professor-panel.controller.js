@@ -291,6 +291,39 @@ const getGroup = async (req, res) => {
   }
 };
 
+const getStudentsByGroup = async (req, res) => {
+  try {
+    const { groupId } = req.query;
+    const decodedToken = req.user;
+    const { userId: professorId } = decodedToken.body;
+
+    if (!groupId) {
+      return res.status(400).json({
+        success: false,
+        error: "Group ID is required"
+      });
+    }
+
+    const students = await professorPanelUseCases.getStudentsByGroup(groupId, professorId);
+
+    return res.status(200).json({
+      success: true,
+      data: students,
+      count: students.length
+    });
+  } catch (error) {
+    console.error("[Controller] Error getting students by group:", error);
+    
+    const status = error.statusCode || 500;
+    const message = error.message || "Internal server error";
+    
+    return res.status(status).json({
+      success: false,
+      error: message
+    });
+  }
+};
+
 const updateGroup = async (req, res) => {
   try {
     const { groupId, ...updates } = req.body;
@@ -528,6 +561,7 @@ const getMyGames = async (req, res) => {
 
 const getGame = async (req, res) => {
   try {
+    console.log("Getting game...")
     const { gameId } = req.query;
     const decodedToken = req.user;
     const { userId: professorId } = decodedToken.body;
@@ -1309,6 +1343,7 @@ const professorPanelControllers = {
   createGroup,
   getMyGroups,
   getGroup,
+  getStudentsByGroup,
   updateGroup,
   addStudentToGroup,
   removeStudentFromGroup,

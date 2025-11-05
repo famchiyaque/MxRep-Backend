@@ -26,6 +26,7 @@ router.get("/get-my-groups", professorPanelControllers.getMyGroups);
 
 // Extended Group Page
 router.get("/get-group", professorPanelControllers.getGroup);
+router.get("/get-students-by-group", professorPanelControllers.getStudentsByGroup);
 router.get("/get-institution-students", professorPanelControllers.getInstitutionStudents);
 router.post("/create-group", professorPanelControllers.createGroup);
 router.post("/update-group", professorPanelControllers.updateGroup);

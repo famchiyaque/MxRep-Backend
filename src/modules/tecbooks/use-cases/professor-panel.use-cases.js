@@ -175,6 +175,18 @@ const getGroup = async (groupId, professorId) => {
   return group;
 };
 
+const getStudentsByGroup = async (groupId, professorId) => {
+  const group = await groupService.getGroupById(groupId);
+  
+  // Verify ownership
+  if (group.professorId._id.toString() !== professorId.toString()) {
+    throw new ForbiddenError("You don't have permission to access this group");
+  }
+  
+  // Return the populated members (students)
+  return group.members;
+};
+
 const updateGroup = async (groupId, professorId, updates) => {
   // Verify ownership
   const group = await groupService.getGroupById(groupId);
@@ -664,6 +676,7 @@ const professorPanelUseCases = {
   createGroup,
   getMyGroups,
   getGroup,
+  getStudentsByGroup,
   updateGroup,
   addStudentToGroup,
   removeStudentFromGroup,
