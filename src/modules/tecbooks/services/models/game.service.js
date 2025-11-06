@@ -1,4 +1,5 @@
 import gameModel from "#src/shared/models/games/game.model.js";
+import groupModel from "#src/shared/models/groups/group.model.js";
 import { DatabaseError, NotFoundError } from "#src/utils/errors/AppError.js";
 
 // Generate unique game code
@@ -60,7 +61,17 @@ const getGameById = async (gameId) => {
       .populate('institutionId', 'name')
       .populate('professorId', 'firstNames lastNames email')
       .populate('groupId', 'name')
-      .populate('configurationId');
+      .populate({
+        path: 'configurationId',
+        populate: [
+          { path: 'availableAssetIds' },
+          { path: 'availableEmployeeIds' },
+          { path: 'availableBOMIds' },
+          { path: 'availableExpenseIds' },
+          { path: 'availableMaterialIds' },
+          { path: 'availableProcessIds' }
+        ]
+      });
     
     if (!game) {
       throw new NotFoundError(`Game with id ${gameId} not found`);
@@ -117,6 +128,37 @@ const getGamesByGroup = async (groupId) => {
     return games;
   } catch (err) {
     console.error("[Service] Error getting games by group:", err);
+    throw new DatabaseError(`Failed to get games: ${err.message}`, err);
+  }
+};
+
+const getGamesByStudent = async (studentId) => {
+  try {
+    // Find all groups where the student is a member
+    const groups = await groupModel.Group.find({ 
+      members: studentId,
+      status: "active"
+    }).select('_id');
+
+    const groupIds = groups.map(g => g._id);
+
+    if (groupIds.length === 0) {
+      return []; // Student is not in any groups
+    }
+
+    // Get all games for these groups, only return active games
+    const games = await gameModel.Game.find({ 
+      groupId: { $in: groupIds },
+      status: { $in: ["active", "paused"] } // Only return active or paused games
+    })
+      .populate('groupId', 'name code')
+      .populate('professorId', 'firstNames lastNames email')
+      .populate('configurationId', 'name initialCapital gameDurationMonths')
+      .sort({ createdAt: -1 });
+
+    return games;
+  } catch (err) {
+    console.error("[Service] Error getting games by student:", err);
     throw new DatabaseError(`Failed to get games: ${err.message}`, err);
   }
 };
@@ -245,6 +287,7 @@ const gameService = {
   getGameByCode,
   getGamesByProfessor,
   getGamesByGroup,
+  getGamesByStudent,
   updateGame,
   activateGame,
   pauseGame,

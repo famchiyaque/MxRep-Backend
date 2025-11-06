@@ -13,7 +13,7 @@ const GameConfigurationSchema = new mongoose.Schema({
     ordersConfigId: { type: mongoose.Schema.Types.ObjectId, ref: "OrdersConfig", required: true },
     
     // Available templates for this game
-    availableAssetIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Asset" }],
+    availableAssetIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "AssetTemplate" }],
     availableEmployeeIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "EmployeeTemplate" }],
     availableBOMIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "BOM" }],
     availableExpenseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "ExpenseTemplate" }],

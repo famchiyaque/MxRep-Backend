@@ -561,7 +561,6 @@ const getMyGames = async (req, res) => {
 
 const getGame = async (req, res) => {
   try {
-    console.log("Getting game...")
     const { gameId } = req.query;
     const decodedToken = req.user;
     const { userId: professorId } = decodedToken.body;
