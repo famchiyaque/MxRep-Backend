@@ -1,0 +1,33 @@
+@startuml
+title "Obtener desglose del prestamo"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getTotalExpenses.service.js" as STB
+boundary "getAmortization.service.js" as SA
+boundary "getInterest.service.js" as SI
+boundary "generateMonthSumary.service.js" as SGMS
+
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+loop <font color=red>while currentYear < currentYear + 5 
+   UC ->UC: currentYear += currentYear
+   loop <font color=red> for summary in Summary Year every 12 months
+    note right: Este objeto debe de tener los salarios \n previamente en obtener el resumen financiero
+       UC ->> STB: const totalSalaryExpenses = getTotalExpenses.\ngetTotalExpenses\n({ annualPrimaMaterialCost: 7651.29, \ndirectLabor: 334.98, \nindirectLabor: 108.92,\n engineeringSalaries: 120.42, \nadministrativeSalaries: 487.15, \nadministrativeExpenses: 332.25 }, CustomerOrder)
+        activate STB
+        STB ->> STB:return  return Object.values(expenses)\n.reduce((total, value)\n => total + (value / divisor), 0);
+        STB -->> UC: totalExpenses
+        deactivate STB
+        note right: Esta suma, suma la amortization\n annual + el interest annual obtenido\n en obtener el\n resumen de pago del credito \n  
+        UC -> UC: const totalExpensesAndFinance = monthSummary.ammortization \n+ monthSummary.Interest\n + totalSalaryExpnses       
+end
+end
+
+        
+       
+deactivate UC
+
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml ObtenerUtilidadoPerdida.plantuml
+title "Obtener la utilidad o Perdida"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getUtilityOrLose.service.js" as SBU
+
+C -> UC: generateExcel(robloxData)
+activate UC
+
+UC ->> SBU: const utilityOrLose =getUtilityOrLoseService.getUtilityOrLose(,brutaUtility)
+activate SBU
+SBU ->> SBU: brutalUtility - operationExpenses
+SBU -->> UC: operationUtility
+deactivate SBU
+
+
+deactivate UC
+
+@enduml

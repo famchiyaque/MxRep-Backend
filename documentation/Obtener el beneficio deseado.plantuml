@@ -1,0 +1,18 @@
+@startuml Obtener la cantidad para alcanzar el beneficio deseado.plantuml
+title "Obtener la cantidad para alcanzar el beneficio deseado"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getDesiredBenefit.service.js" as SCDB
+boundary "getFinalExpenses.service.js" as SCP
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+    UC ->> SME: const desiredBenefit = desiredBenefitService.getDesiredBenefit({\n fixedCostsAnnual,\n 500000, productPrice, variablesAnnualExpenses, })
+    activate SME
+    SME -->> UC: return  (fixedCostsAnnual + targetBenefit) / (productPrice - variablesAnnualExpenses);.
+    deactivate SME
+deactivate UC
+
+
+@enduml

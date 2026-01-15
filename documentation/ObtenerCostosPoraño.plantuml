@@ -1,0 +1,35 @@
+@startuml ObtenerCostosPoraño.plantuml
+title "Obtener Total de costos por año"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getTotalIncomes.service.js" as SGTI
+boundary "getFinalExpenses.service.js" as SCP
+
+
+C -> UC: generateIncomes(dataCreditPayment)
+activate UC
+UC -> UC: summaryYearly = []
+loop <font color=red>while currentYear < currentYear + 5 
+   UC ->UC: currentYear += currentYear
+   UC ->> SGTI: const totalIncomes = getTotalIncomesService.\ngetTotalIncomes\n(customerOrders, competitivtyPrice) 
+    activate SGTI
+    SGTI ->> UC: return customerOrders * competitivityPrice
+    deactivate SGTI
+   loop <font color=red> for summary in Summary Year every 12 months
+
+    note right: Ya no voy a poner estas\n variables pero se obtuvieorn\n anteriormente al sacar los egresos \n sobre el resumen de los salarios de forma anual
+    UC ->> SCP: const finalExpenses = getFinalExpensesService.\ngetFinalExpenses\n(summarySalary, totalIncomes * 0.05)
+    activate SCP
+    SCP ->> UC: return  Object.values(valuesObject).reduce((sum, value) => sum + value, totalIncomes);
+    deactivate SCP
+    UC -> UC: summaryYearly.push(finalExpenses)
+    end
+end
+
+        
+       
+deactivate UC
+
+
+@enduml

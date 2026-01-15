@@ -1,0 +1,316 @@
+// models/schemas.js
+// Mongoose schemas for MXREP (first-version, captures config <> config-* <> run-assignment pattern)
+// Install: npm i mongoose
+const mongoose = require("mongoose");
+const { Schema, Types } = mongoose;
+const ObjectId = Schema.Types.ObjectId;
+
+/*
+  Notes:
+  - All collections use references (ObjectId) for relations.
+  - GameConfiguration stores references to the "config collection" documents:
+      configJobId, configMachineryId, configExpenseId, configBomId, premiseId, orderConfigId
+    Those config-* documents themselves contain arrays of items (or references), as required.
+  - RunJobAssignment / RunMachineryAssignment / RunExpenseRecord link Runs to config entries,
+    and store dynamic runtime fields (hireDate, firedDate, cost, quantity, employeeName, etc).
+  - No "employees" global collection: the Job collection can include an optional `names` array
+    as a convenience (for institution-level roster placeholders). The runtime assignments store the
+    actual hired names.
+*/
+
+// ---------- Institution ----------
+const InstitutionSchema = new Schema({
+  name: { type: String, required: true, trim: true },
+  slug: { type: String, required: true, trim: true, lowercase: true, index: true },
+  country: String,
+  city: String,
+  contactEmail: String,
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+}, { timestamps: true });
+
+InstitutionSchema.index({ slug: 1 }, { unique: true });
+
+// ---------- User ----------
+const UserSchema = new Schema({
+  institutionId: { type: ObjectId, ref: "Institution", required: true, index: true },
+  name: { type: String, required: true },
+  email: { type: String, required: true, index: true },
+  passwordHash: String,
+  role: { type: String, enum: ["super-admin", "admin", "professor", "student"], required: true },
+  // permission/admin granularity:
+  adminLevel: { type: String, enum: ["none", "institution", "super"], default: "none" },
+  createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+// ---------- Requests ----------
+const InstitutionRequestSchema = new Schema({
+  institutionName: { type: String, required: true },
+  requesterEmail: { type: String, required: true },
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+}, { timestamps: true });
+
+const ProfessorRequestSchema = new Schema({
+  institutionId: { type: ObjectId, ref: "Institution", required: true },
+  professorEmail: { type: String, required: true },
+  professorName: String,
+  status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+}, { timestamps: true });
+
+// ---------- Academic structure ----------
+const ClassSchema = new Schema({
+  professorId: { type: ObjectId, ref: "User", required: true },
+  institutionId: { type: ObjectId, ref: "Institution", required: true, index: true },
+  name: { type: String, required: true },
+  semester: String
+}, { timestamps: true });
+
+const GroupSchema = new Schema({
+  classId: { type: ObjectId, ref: "Class", required: true },
+  name: { type: String, required: true }
+}, { timestamps: true });
+
+// ---------- Game & Configuration ----------
+const GameSchema = new Schema({
+  groupId: { type: ObjectId, ref: "Group", required: true },
+  professorId: { type: ObjectId, ref: "User", required: true },
+  name: { type: String, required: true },
+  code: { type: String, index: true }, // join code
+  status: { type: String, enum: ["draft", "active", "ended"], default: "draft" },
+  configurationId: { type: ObjectId, ref: "GameConfiguration" }, // link to config doc
+}, { timestamps: true });
+
+GameSchema.index({ code: 1 }, { unique: true, sparse: true });
+
+// The configuration references the config documents (no arrays here)
+const GameConfigurationSchema = new Schema({
+  gameId: { type: ObjectId, ref: "Game", required: true, unique: true },
+  professorId: { type: ObjectId, ref: "User", required: true },
+  institutionId: { type: ObjectId, ref: "Institution", required: true },
+
+  // each of these points to a separate config doc that contains the actual arrays/references
+  configJobId: { type: ObjectId, ref: "ConfigJob" },          // holds job list for this config
+  configMachineryId: { type: ObjectId, ref: "ConfigMachinery" },
+  configExpenseId: { type: ObjectId, ref: "ConfigExpense" },
+  configBomId: { type: ObjectId, ref: "ConfigBom" },
+
+  premiseId: { type: ObjectId, ref: "Premise" },
+  orderConfigId: { type: ObjectId, ref: "OrderConfig" },
+
+  createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+// ---------- Shared master tables ----------
+const PremiseSchema = new Schema({
+  name: { type: String, required: true },
+  area: Number,
+  rentCost: Number,
+  powerCapacity: Number
+}, { timestamps: true });
+
+const OrderConfigSchema = new Schema({
+  productType: String,
+  initialOrders: Number,
+  demandRate: Number
+}, { timestamps: true });
+
+// Base machinery catalog (master records)
+const MachinerySchema = new Schema({
+  name: { type: String, required: true },
+  type: String,
+  baseCost: Number,
+  maintenanceCost: Number,
+  productionRate: Number
+}, { timestamps: true });
+
+// Job table (master). includes "names" array as a simple list if you want institution-level placeholders.
+// Also includes 'schedule' field and job `type` for job classification
+const JobSchema = new Schema({
+  name: { type: String, required: true },
+  description: String,
+  baseSalary: { type: Number, default: 0 },
+  // schedule could be cron-like or enum; keep flexible
+  schedule: {
+    type: String,
+    default: "full-time" // or 'part-time', or cron-style text
+  },
+  // optional faculty/roster placeholder names
+  names: [String],
+}, { timestamps: true });
+
+// Expense master
+const ExpenseSchema = new Schema({
+  name: { type: String, required: true },
+  defaultCost: { type: Number, default: 0 },
+  type: { type: String, enum: ["fixed", "variable", "one-time"], default: "fixed" }
+}, { timestamps: true });
+
+// BOM master
+const BomSchema = new Schema({
+  productName: String,
+  requiredMaterials: [String],
+  materialCost: Number
+}, { timestamps: true });
+
+// ---------- Config-* collections (each is per-GameConfiguration) ----------
+// These docs hold arrays of references or embedded data for the configuration
+
+// ConfigJob: which jobs are available in this configuration (references master Job)
+const ConfigJobSchema = new Schema({
+  configurationId: { type: ObjectId, ref: "GameConfiguration", required: true, index: true },
+  jobs: [{
+    jobId: { type: ObjectId, ref: "Job", required: true },
+    // possible extras per config item (e.g., modified salary)
+    customSalary: Number,
+    customSchedule: String,
+    minCount: Number,
+    maxCount: Number
+  }]
+}, { timestamps: true });
+
+// ConfigMachinery: available machinery in the configuration (references master Machinery)
+const ConfigMachinerySchema = new Schema({
+  configurationId: { type: ObjectId, ref: "GameConfiguration", required: true, index: true },
+  machinery: [{
+    baseMachineryId: { type: ObjectId, ref: "Machinery", required: true },
+    customCost: Number,
+    customEfficiency: Number,
+    availableCount: Number
+  }]
+}, { timestamps: true });
+
+// ConfigExpense: which expenses exist in this configuration (references master Expense)
+const ConfigExpenseSchema = new Schema({
+  configurationId: { type: ObjectId, ref: "GameConfiguration", required: true, index: true },
+  expenses: [{
+    expenseId: { type: ObjectId, ref: "Expense", required: true },
+    defaultAmount: Number
+  }]
+}, { timestamps: true });
+
+// ConfigBom: which BOMs are part of this configuration
+const ConfigBomSchema = new Schema({
+  configurationId: { type: ObjectId, ref: "GameConfiguration", required: true, index: true },
+  boms: [{
+    baseBomId: { type: ObjectId, ref: "Bom", required: true },
+    customMaterialCost: Number
+  }]
+}, { timestamps: true });
+
+// ---------- Teams ----------
+const TeamSchema = new Schema({
+  gameId: { type: ObjectId, ref: "Game", required: true, index: true },
+  name: { type: String, required: true },
+  studentIds: [{ type: ObjectId, ref: "User" }]
+}, { timestamps: true });
+
+// ---------- Runs and Lines ----------
+const RunSchema = new Schema({
+  teamId: { type: ObjectId, ref: "Team", required: true, index: true },
+  gameId: { type: ObjectId, ref: "Game", required: true, index: true },
+  configurationId: { type: ObjectId, ref: "GameConfiguration", required: true },
+
+  // We will not embed lines here; lines are separate docs
+  lineIds: [{ type: ObjectId, ref: "Line" }],
+
+  // references to config-level docs for convenience
+  configJobId: { type: ObjectId, ref: "ConfigJob" },
+  configMachineryId: { type: ObjectId, ref: "ConfigMachinery" },
+  configExpenseId: { type: ObjectId, ref: "ConfigExpense" },
+  configBomId: { type: ObjectId, ref: "ConfigBom" },
+
+  teamCapital: { type: Number, default: 0 },
+  status: { type: String, enum: ["in-progress", "completed"], default: "in-progress" },
+  startedAt: Date,
+  endedAt: Date
+}, { timestamps: true });
+
+// Line doc (one per production line inside a run)
+const LineSchema = new Schema({
+  runId: { type: ObjectId, ref: "Run", required: true, index: true },
+  name: String,
+  throughput: Number,
+  downtime: Number,
+  quality: Number
+}, { timestamps: true });
+
+// ---------- Run relational tables (assignments / runtime records) ----------
+// These link a Run to configured items and store dynamic runtime fields
+
+// RunJobAssignment: when a team hires/fires a job during a run
+const RunJobAssignmentSchema = new Schema({
+  runId: { type: ObjectId, ref: "Run", required: true, index: true },
+  configJobId: { type: ObjectId, ref: "ConfigJob", required: true }, // which config list
+  jobId: { type: ObjectId, ref: "Job", required: true },              // base job
+  employeeName: String,   // actual name used in the run
+  hiredAt: Date,
+  firedAt: Date,
+  salaryPaid: { type: Number, default: 0 },
+  notes: String
+}, { timestamps: true });
+
+// RunMachineryAssignment: purchases/leases of machinery for the run
+const RunMachineryAssignmentSchema = new Schema({
+  runId: { type: ObjectId, ref: "Run", required: true, index: true },
+  configMachineryId: { type: ObjectId, ref: "ConfigMachinery", required: true },
+  baseMachineryId: { type: ObjectId, ref: "Machinery", required: true },
+  acquiredAt: Date,
+  pricePaid: Number,
+  quantity: { type: Number, default: 1 },
+  status: { type: String, enum: ["operational","broken","maintenance"], default: "operational" },
+  notes: String
+}, { timestamps: true });
+
+// RunExpenseRecord: runtime expense entries (electricity bills, marketing spend, etc.)
+const RunExpenseRecordSchema = new Schema({
+  runId: { type: ObjectId, ref: "Run", required: true, index: true },
+  configExpenseId: { type: ObjectId, ref: "ConfigExpense", required: true },
+  expenseId: { type: ObjectId, ref: "Expense", required: true },
+  date: Date,
+  amount: Number,
+  notes: String
+}, { timestamps: true });
+
+// ---------- Indexing suggestions ----------
+RunSchema.index({ teamId: 1, gameId: 1 });
+TeamSchema.index({ gameId: 1 });
+ConfigJobSchema.index({ configurationId: 1 });
+ConfigMachinerySchema.index({ configurationId: 1 });
+ConfigExpenseSchema.index({ configurationId: 1 });
+ConfigBomSchema.index({ configurationId: 1 });
+
+// ---------- Model exports ----------
+module.exports = {
+  Institution: mongoose.model("Institution", InstitutionSchema),
+  User: mongoose.model("User", UserSchema),
+  InstitutionRequest: mongoose.model("InstitutionRequest", InstitutionRequestSchema),
+  ProfessorRequest: mongoose.model("ProfessorRequest", ProfessorRequestSchema),
+
+  Class: mongoose.model("Class", ClassSchema),
+  Group: mongoose.model("Group", GroupSchema),
+
+  Game: mongoose.model("Game", GameSchema),
+  GameConfiguration: mongoose.model("GameConfiguration", GameConfigurationSchema),
+
+  // masters
+  Premise: mongoose.model("Premise", PremiseSchema),
+  OrderConfig: mongoose.model("OrderConfig", OrderConfigSchema),
+  Machinery: mongoose.model("Machinery", MachinerySchema),
+  Job: mongoose.model("Job", JobSchema),
+  Expense: mongoose.model("Expense", ExpenseSchema),
+  Bom: mongoose.model("Bom", BomSchema),
+
+  // per-config relation docs
+  ConfigJob: mongoose.model("ConfigJob", ConfigJobSchema),
+  ConfigMachinery: mongoose.model("ConfigMachinery", ConfigMachinerySchema),
+  ConfigExpense: mongoose.model("ConfigExpense", ConfigExpenseSchema),
+  ConfigBom: mongoose.model("ConfigBom", ConfigBomSchema),
+
+  Team: mongoose.model("Team", TeamSchema),
+  Run: mongoose.model("Run", RunSchema),
+  Line: mongoose.model("Line", LineSchema),
+
+  // runtime relational records
+  RunJobAssignment: mongoose.model("RunJobAssignment", RunJobAssignmentSchema),
+  RunMachineryAssignment: mongoose.model("RunMachineryAssignment", RunMachineryAssignmentSchema),
+  RunExpenseRecord: mongoose.model("RunExpenseRecord", RunExpenseRecordSchema)
+};

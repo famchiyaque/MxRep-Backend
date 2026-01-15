@@ -1,0 +1,32 @@
+@startuml Obtener viabilidad del proyyecto.plantuml
+title "Obtener viabilidad del proyecto"
+
+control "generateData.controller.js" as C
+boundary "generateLoanCredit.usecase.js" as UC
+boundary "getProjectViability.service.js" as SME
+
+activate UC
+
+UC ->> SME: const  projectViability = getProjectViabilityService.\ngetProjectViability\n(TIRPercentage, TREMA) 
+activate SME
+SME -->> UC: return TIR < TREMA
+
+alt TIR > TREMA
+  SME ->SME: "Proyecto Aceptable"
+ SME -> SME: return { SMEision: "ACEPTADO", motivo: "TIR > TREMA" }
+
+else if TIR == TREMA
+  SME ->SME: "Proyecto IndiSMErente"
+ SME -> SME: return { SMEision: "INDISMERENTE", motivo: "TIR = TREMA" }
+
+else
+  SME ->SME: "Proyecto No Aceptable"
+ SME -> SME: return { SMEision: "RECHAZADO", motivo: "TIR < TREMA" }
+end
+
+deactivate SME
+
+
+deactivate UC
+
+@enduml
